@@ -3,6 +3,7 @@ package cn.tpkf.pi.function;
 import cn.tpkf.pi.enums.FunctionStateEnums;
 import cn.tpkf.pi.exception.FunctionException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +21,7 @@ public abstract class AbstractFunction implements Function {
 
     protected final String name;
 
-    protected final List<AbstractFunctionCommand> commands;
+    protected final List<FunctionCommand> commands;
 
     protected final ReentrantLock lock;
 
@@ -30,11 +31,15 @@ public abstract class AbstractFunction implements Function {
 
     protected AtomicInteger currentCommandIndex;
 
-    protected AbstractFunction(String id, String name, List<AbstractFunctionCommand> commands) {
+    protected AbstractFunction(String id, String name, FunctionCommand commands) {
+        this(id, name, Collections.singletonList(commands), 0, 2000L);
+    }
+
+    protected AbstractFunction(String id, String name, List<FunctionCommand> commands) {
         this(id, name, commands, 0, 2000L);
     }
 
-    protected AbstractFunction(String id, String name, List<AbstractFunctionCommand> commands, Integer commandIndex, Long executeTimeOut) {
+    protected AbstractFunction(String id, String name, List<FunctionCommand> commands, Integer commandIndex, Long executeTimeOut) {
         this.id = id;
         this.name = name;
         this.commands = commands;
@@ -50,7 +55,7 @@ public abstract class AbstractFunction implements Function {
     }
 
     @Override
-    public AbstractFunctionCommand getCurrentCommand() {
+    public FunctionCommand getCurrentCommand() {
         return commands.get(currentCommandIndex.getAcquire());
     }
 
@@ -60,12 +65,12 @@ public abstract class AbstractFunction implements Function {
     }
 
     @Override
-    public AbstractFunctionCommand getCommand(Integer index) {
+    public FunctionCommand getCommand(Integer index) {
         return commands.get(index);
     }
 
     @Override
-    public AbstractFunctionCommand getNextCommand() {
+    public FunctionCommand getNextCommand() {
         if (currentCommandIndex.getAcquire() >= commands.size()) {
             return commands.get(0);
         }
@@ -88,7 +93,7 @@ public abstract class AbstractFunction implements Function {
                 int index = currentCommandIndex.getAcquire();
                 while (state.getAcquire().equals(FunctionStateEnums.RUNNING)) {
                     currentCommandIndex.set(index);
-                    AbstractFunctionCommand command = commands.get(index);
+                    FunctionCommand command = commands.get(index);
                     command.execute();
                     if (index == commands.size() - 1) {
                         index = 0;

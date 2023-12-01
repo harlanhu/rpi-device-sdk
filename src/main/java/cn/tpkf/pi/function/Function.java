@@ -20,7 +20,7 @@ public interface Function {
      * 获取当前命令
      * @return 命令
      */
-    AbstractFunctionCommand getCurrentCommand();
+    FunctionCommand getCurrentCommand();
 
     /**
      * 获取当前命令索引
@@ -33,14 +33,14 @@ public interface Function {
      * @param index 索引
      * @return 命令
      */
-    AbstractFunctionCommand getCommand(Integer index);
+    FunctionCommand getCommand(Integer index);
 
 
     /**
      * 获取下一个命令
      * @return 命令
      */
-    AbstractFunctionCommand getNextCommand();
+    FunctionCommand getNextCommand();
 
     /**
      * 获取命令数量
