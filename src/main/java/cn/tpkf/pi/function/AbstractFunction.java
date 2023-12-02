@@ -20,6 +20,10 @@ public abstract class AbstractFunction implements Function {
 
     protected final String name;
 
+    protected final Integer weight;
+
+    protected final Long executionInterval;
+
     protected final List<AbstractFunctionCommand> commands;
 
     protected final ReentrantLock lock;
@@ -30,13 +34,15 @@ public abstract class AbstractFunction implements Function {
 
     protected AtomicInteger currentCommandIndex;
 
-    protected AbstractFunction(String id, String name, List<AbstractFunctionCommand> commands) {
-        this(id, name, commands, 0, 2000L);
+    protected AbstractFunction(String id, String name, Integer weight, Long executionInterval, List<AbstractFunctionCommand> commands) {
+        this(id, name, weight, executionInterval, commands, 0, 2000L);
     }
 
-    protected AbstractFunction(String id, String name, List<AbstractFunctionCommand> commands, Integer commandIndex, Long executeTimeOut) {
+    protected AbstractFunction(String id, String name, Integer weight, Long executionInterval, List<AbstractFunctionCommand> commands, Integer commandIndex, Long executeTimeOut) {
         this.id = id;
         this.name = name;
+        this.weight = weight;
+        this.executionInterval = executionInterval;
         this.commands = commands;
         this.lock = new ReentrantLock();
         this.state = new AtomicReference<>(FunctionStateEnums.INIT);

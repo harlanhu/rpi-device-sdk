@@ -10,6 +10,33 @@ import cn.tpkf.pi.enums.FunctionStateEnums;
 public interface Function {
 
     /**
+     * 获取唯一标识
+     *
+     * @return 唯一标识
+     */
+    String getId();
+
+    /**
+     * 获取名称
+     *
+     * @return 名称
+     */
+    String getName();
+
+    /**
+     * 获取权重
+     * @return 权重
+     */
+    Integer getWeight();
+
+    /**
+     * 获取执行间隔
+     * @return 执行间隔 毫秒
+     */
+    Long getExecutionInterval();
+
+
+    /**
      * 获取当前状态
      *
      * @return 状态
