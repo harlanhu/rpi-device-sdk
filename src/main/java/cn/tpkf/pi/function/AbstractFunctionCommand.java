@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class AbstractFunctionCommand {
+public abstract class AbstractFunctionCommand implements FunctionCommand {
 
     protected InnerFunctionCommand command;
 
@@ -29,17 +29,8 @@ public abstract class AbstractFunctionCommand {
      */
     protected Integer index;
 
-    /**
-     * 执行
-     */
-    abstract void execute();
 
     void execute(InnerFunctionCommand command) {
         command.execute();
     }
-
-    /**
-     * 停止
-     */
-    abstract void stop();
 }
