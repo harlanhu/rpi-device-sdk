@@ -1,9 +1,5 @@
 package cn.tpkf.pi.devices;
 
-import cn.tpkf.pi.manager.DeviceManager;
-
-import java.util.List;
-
 /**
  * @author Harlan
  * @email isharlan.hu@gmali.com
@@ -22,20 +18,4 @@ public interface Device {
      * @return 设备名称
      */
     String getName();
-
-    /**
-     * 初始化设备
-     */
-    void init();
-
-    /**
-     * 销毁设备
-     */
-    void destroy();
-
-    /**
-     * 获取设备管理器
-     * @return 设备管理器
-     */
-    DeviceManager getDeviceManager();
 }

@@ -1,7 +1,7 @@
 package cn.tpkf.pi.manager;
 
 import cn.hutool.core.io.resource.ResourceUtil;
-import cn.tpkf.pi.devices.Device;
+import cn.hutool.core.lang.UUID;
 import cn.tpkf.pi.enums.PinEnums;
 import cn.tpkf.pi.exception.DeviceManagerException;
 import cn.tpkf.pi.pojo.PlatformInfo;
@@ -9,7 +9,10 @@ import cn.tpkf.pi.utils.SystemInfoUtils;
 import com.alibaba.fastjson2.JSON;
 import com.pi4j.common.Descriptor;
 import com.pi4j.context.Context;
-import com.pi4j.io.impl.IOConfigBuilderBase;
+import com.pi4j.io.gpio.digital.DigitalOutput;
+import com.pi4j.io.gpio.digital.DigitalOutputConfig;
+import com.pi4j.io.gpio.digital.DigitalOutputConfigBuilder;
+import com.pi4j.io.gpio.digital.DigitalState;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oshi.hardware.CentralProcessor;
@@ -102,6 +105,25 @@ public class DeviceManager {
                 lock.unlock();
             }
         }
+    }
+
+    public DigitalOutput registerDODevice(String name, PinEnums address, DigitalState initial, DigitalState shutdown, DigitalState onState) {
+        return execute(c -> {
+            if (pins.contains(address)) {
+                throw new DeviceManagerException("The pin has been registered");
+            }
+            DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(context)
+                    .id(UUID.randomUUID().toString())
+                    .name(name)
+                    .address(address.getVale())
+                    .initial(initial)
+                    .shutdown(shutdown)
+                    .onState(onState)
+                    .build();
+            DigitalOutput digitalOutput = c.create(config);
+            pins.add(address);
+            return digitalOutput;
+        });
     }
 
     /**
