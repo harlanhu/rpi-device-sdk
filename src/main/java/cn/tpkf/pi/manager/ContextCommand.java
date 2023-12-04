@@ -13,6 +13,8 @@ public interface ContextCommand<T> {
 
     /**
      * 执行命令
+     * @param context 上下文
+     * @return 返回值
      */
     T execute(Context context);
 }

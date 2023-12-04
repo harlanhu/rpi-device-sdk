@@ -94,13 +94,18 @@ public abstract class AbstractFunction implements Function {
             throw new FunctionException("The function is currently executing.");
         }
         try {
+            //尝试获取锁
             if (lock.tryLock(executeTimeOut, TimeUnit.MICROSECONDS)) {
                 state.set(FunctionStateEnums.RUNNING);
                 int index = currentCommandIndex.getAcquire();
+                //运行态时循环执行
                 while (state.getAcquire().equals(FunctionStateEnums.RUNNING)) {
                     currentCommandIndex.set(index);
                     FunctionCommand command = commands.get(index);
                     command.execute();
+                    if (executionInterval > 0) {
+                        TimeUnit.MILLISECONDS.sleep(executionInterval);
+                    }
                     if (index == commands.size() - 1) {
                         index = 0;
                     } else {

@@ -1,18 +1,22 @@
 package cn.tpkf.pi.manager;
 
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.tpkf.pi.devices.Device;
+import cn.tpkf.pi.enums.PinEnums;
 import cn.tpkf.pi.exception.DeviceManagerException;
 import cn.tpkf.pi.pojo.PlatformInfo;
 import cn.tpkf.pi.utils.SystemInfoUtils;
 import com.alibaba.fastjson2.JSON;
 import com.pi4j.common.Descriptor;
 import com.pi4j.context.Context;
+import com.pi4j.io.impl.IOConfigBuilderBase;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.HardwareAbstractionLayer;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,11 +30,25 @@ import java.util.concurrent.locks.ReentrantLock;
 @AllArgsConstructor
 public class DeviceManager {
 
+    /**
+     * 上下文
+     */
     private final Context context;
 
+    /**
+     * 获取锁超时时间
+     */
     private final Long timeOutMillis;
 
+    /**
+     * 设备锁
+     */
     private final ReentrantLock lock;
+
+    /**
+     * PIN列表
+     */
+    private List<PinEnums> pins;
 
     public DeviceManager(Context context) {
         this(context, 2000L);
@@ -85,7 +103,6 @@ public class DeviceManager {
             }
         }
     }
-
 
     /**
      * 判断应用程序是否正在运行中

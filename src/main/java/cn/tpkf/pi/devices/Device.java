@@ -1,11 +1,27 @@
 package cn.tpkf.pi.devices;
 
+import cn.tpkf.pi.manager.DeviceManager;
+
+import java.util.List;
+
 /**
  * @author Harlan
  * @email isharlan.hu@gmali.com
  * @date 2023/11/22
  */
 public interface Device {
+
+    /**
+     * 获取设备id
+     * @return 设备id
+     */
+    String getId();
+
+    /**
+     * 获取设备名称
+     * @return 设备名称
+     */
+    String getName();
 
     /**
      * 初始化设备
@@ -18,23 +34,8 @@ public interface Device {
     void destroy();
 
     /**
-     * 执行命令
-     * @param command 命令
-     * @return 返回结果
-     * @param <T> 返回结果类型
+     * 获取设备管理器
+     * @return 设备管理器
      */
-    <T> T execute(DeviceCommand<T> command);
-
-    /**
-     * 异步执行命令
-     * @param command 命令
-     * @return 返回结果
-     * @param <T> 返回结果类型
-     */
-    <T> T asyncExecute(DeviceCommand<T> command);
-
-    /**
-     * 停止当前命令
-     */
-    void stopCurrentCommand();
+    DeviceManager getDeviceManager();
 }
