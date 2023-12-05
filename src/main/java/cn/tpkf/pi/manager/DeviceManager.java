@@ -1,27 +1,23 @@
 package cn.tpkf.pi.manager;
 
 import cn.hutool.core.io.resource.ResourceUtil;
-import cn.hutool.core.lang.UUID;
-import cn.tpkf.pi.enums.PinEnums;
+import cn.tpkf.pi.devices.Device;
 import cn.tpkf.pi.exception.DeviceManagerException;
 import cn.tpkf.pi.pojo.PlatformInfo;
 import cn.tpkf.pi.utils.SystemInfoUtils;
 import com.alibaba.fastjson2.JSON;
 import com.pi4j.common.Descriptor;
 import com.pi4j.context.Context;
-import com.pi4j.io.gpio.GpioConfig;
-import com.pi4j.io.gpio.digital.*;
-import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalInputProvider;
-import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalOutputProvider;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.HardwareAbstractionLayer;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -49,10 +45,7 @@ public class DeviceManager {
      */
     private final ReentrantLock lock;
 
-    /**
-     * PIN列表
-     */
-    private Map<PinEnums, String> pins;
+    private Map<String, Device> devices = new ConcurrentHashMap<>();
 
     public DeviceManager(Context context) {
         this(context, 2000L);
@@ -108,64 +101,23 @@ public class DeviceManager {
         }
     }
 
-    public DigitalOutput registerDODevice(String name, PinEnums address, DigitalState initial, DigitalState shutdown, DigitalState onState) {
-        return execute(c -> {
-            if (pins.containsKey(address)) {
-                throw new DeviceManagerException("The pin has been registered");
-            }
-            String id = UUID.randomUUID().toString();
-            DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(context)
-                    .id(id)
-                    .name(name)
-                    .address(address.getVale())
-                    .initial(initial)
-                    .shutdown(shutdown)
-                    .onState(onState)
-                    .provider(LinuxFsDigitalOutputProvider.class)
-                    .build();
-            DigitalOutput digitalOutput = c.create(config);
-            pins.put(address, id + "-" + name);
-            return digitalOutput;
-        });
+    /**
+     * 添加设备
+     * @param device 设备
+     */
+    public void addDevice(Device device) {
+        if (StringUtils.isBlank(device.getId())) {
+            throw new DeviceManagerException("Device id or name is blank");
+        }
+        devices.put(device.getId(), device);
     }
 
-    public DigitalInput registerDIDevice(String name, PinEnums address, DigitalState onState, PullResistance pullResistance, Long interval, TimeUnit timeUnit) {
-        return execute(c -> {
-            if (pins.containsKey(address)) {
-                throw new DeviceManagerException("The pin has been registered");
-            }
-            String id = UUID.randomUUID().toString();
-            DigitalInputConfig config = DigitalInputConfigBuilder.newInstance(context)
-                    .id(id)
-                    .name(name)
-                    .address(address.getVale())
-                    .pull(pullResistance)
-                    .debounce(interval, timeUnit)
-                    .onState(onState)
-                    .provider(LinuxFsDigitalInputProvider.class)
-                    .build();
-            DigitalInput digitalInput = c.create(config);
-            pins.put(address, id + name);
-            return digitalInput;
-        });
-    }
-
-    public List<PinEnums> getAllPins() {
-        return List.copyOf(pins.keySet());
-    }
-
-    public List<PinEnums> getPinsById(String uuid) {
-        return pins.entrySet().stream()
-                .filter(entry -> entry.getValue().startsWith(uuid))
-                .map(Map.Entry::getKey)
-                .toList();
-    }
-
-    public List<PinEnums> getPinsByName(String name) {
-        return pins.entrySet().stream()
-                .filter(entry -> entry.getValue().endsWith(name))
-                .map(Map.Entry::getKey)
-                .toList();
+    /**
+     * 移除设备
+     * @param id 设备id
+     */
+    public void removeDevice(String id) {
+        devices.remove(id);
     }
 
     /**

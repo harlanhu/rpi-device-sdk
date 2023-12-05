@@ -18,4 +18,12 @@ public interface Device {
      * @return 设备名称
      */
     String getName();
+
+    /**
+     * 执行命令
+     * @param command 命令
+     * @return 命令执行结果
+     * @param <T> 命令执行结果类型
+     */
+    <T> T execute(DeviceCommand<T> command);
 }
