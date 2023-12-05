@@ -9,10 +9,10 @@ import cn.tpkf.pi.utils.SystemInfoUtils;
 import com.alibaba.fastjson2.JSON;
 import com.pi4j.common.Descriptor;
 import com.pi4j.context.Context;
-import com.pi4j.io.gpio.digital.DigitalOutput;
-import com.pi4j.io.gpio.digital.DigitalOutputConfig;
-import com.pi4j.io.gpio.digital.DigitalOutputConfigBuilder;
-import com.pi4j.io.gpio.digital.DigitalState;
+import com.pi4j.io.gpio.GpioConfig;
+import com.pi4j.io.gpio.digital.*;
+import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalInputProvider;
+import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalOutputProvider;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oshi.hardware.CentralProcessor;
@@ -20,6 +20,7 @@ import oshi.hardware.HardwareAbstractionLayer;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -51,7 +52,7 @@ public class DeviceManager {
     /**
      * PIN列表
      */
-    private List<PinEnums> pins;
+    private Map<PinEnums, String> pins;
 
     public DeviceManager(Context context) {
         this(context, 2000L);
@@ -109,21 +110,62 @@ public class DeviceManager {
 
     public DigitalOutput registerDODevice(String name, PinEnums address, DigitalState initial, DigitalState shutdown, DigitalState onState) {
         return execute(c -> {
-            if (pins.contains(address)) {
+            if (pins.containsKey(address)) {
                 throw new DeviceManagerException("The pin has been registered");
             }
+            String id = UUID.randomUUID().toString();
             DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(context)
-                    .id(UUID.randomUUID().toString())
+                    .id(id)
                     .name(name)
                     .address(address.getVale())
                     .initial(initial)
                     .shutdown(shutdown)
                     .onState(onState)
+                    .provider(LinuxFsDigitalOutputProvider.class)
                     .build();
             DigitalOutput digitalOutput = c.create(config);
-            pins.add(address);
+            pins.put(address, id + "-" + name);
             return digitalOutput;
         });
+    }
+
+    public DigitalInput registerDIDevice(String name, PinEnums address, DigitalState onState, PullResistance pullResistance, Long interval, TimeUnit timeUnit) {
+        return execute(c -> {
+            if (pins.containsKey(address)) {
+                throw new DeviceManagerException("The pin has been registered");
+            }
+            String id = UUID.randomUUID().toString();
+            DigitalInputConfig config = DigitalInputConfigBuilder.newInstance(context)
+                    .id(id)
+                    .name(name)
+                    .address(address.getVale())
+                    .pull(pullResistance)
+                    .debounce(interval, timeUnit)
+                    .onState(onState)
+                    .provider(LinuxFsDigitalInputProvider.class)
+                    .build();
+            DigitalInput digitalInput = c.create(config);
+            pins.put(address, id + name);
+            return digitalInput;
+        });
+    }
+
+    public List<PinEnums> getAllPins() {
+        return List.copyOf(pins.keySet());
+    }
+
+    public List<PinEnums> getPinsById(String uuid) {
+        return pins.entrySet().stream()
+                .filter(entry -> entry.getValue().startsWith(uuid))
+                .map(Map.Entry::getKey)
+                .toList();
+    }
+
+    public List<PinEnums> getPinsByName(String name) {
+        return pins.entrySet().stream()
+                .filter(entry -> entry.getValue().endsWith(name))
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     /**
