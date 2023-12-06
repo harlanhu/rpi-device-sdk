@@ -41,7 +41,7 @@ public class DeviceManager {
      */
     private final ReentrantLock lock;
 
-    private Map<String, Device> devices = new ConcurrentHashMap<>();
+    private final Map<String, Device> devices = new ConcurrentHashMap<>();
 
     public DeviceManager(Context context) {
         this(context, 2000L);
@@ -114,6 +114,10 @@ public class DeviceManager {
      */
     public void removeDevice(String id) {
         devices.remove(id);
+    }
+
+    public Device getDevice(String id) {
+        return devices.get(id);
     }
 
     /**

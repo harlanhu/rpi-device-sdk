@@ -8,6 +8,8 @@ import com.pi4j.io.gpio.digital.DigitalInputConfig;
 import com.pi4j.io.gpio.digital.DigitalInputConfigBuilder;
 
 /**
+ * 数字信号输入设备
+ *
  * @author Harlan
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6

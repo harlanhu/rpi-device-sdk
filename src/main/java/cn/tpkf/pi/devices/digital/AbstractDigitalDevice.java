@@ -7,6 +7,8 @@ import com.pi4j.io.gpio.digital.DigitalState;
 import lombok.Getter;
 
 /**
+ * 数字信号设备
+ *
  * @author Harlan
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
@@ -29,6 +31,6 @@ public abstract class AbstractDigitalDevice extends AbstractDevice {
 
     @Override
     public String getDescription() {
-        return id + "-BCM " + address.getVale() + "-" + name;
+        return id + "-DO-BCM " + address.getVale() + "-" + name;
     }
 }

@@ -6,6 +6,7 @@ import com.pi4j.io.gpio.digital.DigitalState;
 
 /**
  * 蜂鸣器
+ *
  * @author Harlan
  * @email isharlan.hu@gmali.com
  * @date 2023/12/5

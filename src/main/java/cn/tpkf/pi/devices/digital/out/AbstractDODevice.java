@@ -10,6 +10,8 @@ import lombok.Getter;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 数字信号输出设备
+ *
  * @author Harlan
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
@@ -26,7 +28,7 @@ public class AbstractDODevice extends AbstractDigitalDevice {
 
     public AbstractDODevice(DeviceManager deviceManager, String id, String name, BCMEnums address, DigitalState initial, DigitalState shutdown) {
         super(deviceManager, id, name, address);
-        digitalOutput = deviceManager.execute(c-> {
+        digitalOutput = deviceManager.execute(c -> {
             DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(c)
                     .id(id)
                     .name(name)
