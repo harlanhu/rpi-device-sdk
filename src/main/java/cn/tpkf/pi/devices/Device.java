@@ -20,10 +20,13 @@ public interface Device {
     String getName();
 
     /**
-     * 执行命令
-     * @param command 命令
-     * @return 命令执行结果
-     * @param <T> 命令执行结果类型
+     * 关闭设备
      */
-    <T> T execute(DeviceCommand<T> command);
+    void shutdown();
+
+    /**
+     * 获取设备描述
+     * @return 设备描述
+     */
+    String getDescription();
 }

@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import cn.tpkf.pi.manager.DeviceManager;
+import lombok.Getter;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,35 +10,31 @@ import java.util.concurrent.locks.ReentrantLock;
  * @email isharlan.hu@gmali.com
  * @date 2023/11/22
  */
-@Data
-@AllArgsConstructor
 public abstract class AbstractDevice implements Device {
 
-    protected String id;
+    @Getter
+    protected final String id;
 
-    protected String name;
+    @Getter
+    protected final String name;
+
+    protected final DeviceManager deviceManager;
 
     /**
      * 设备锁
      */
     protected final ReentrantLock lock;
 
-    protected AbstractDevice(String id, String name) {
+    protected AbstractDevice(DeviceManager deviceManager, String id, String name) {
         this.id = id;
         this.name = name;
+        this.deviceManager = deviceManager;
         this.lock = new ReentrantLock();
     }
 
     @Override
-    public <T> T execute(DeviceCommand<T> command) {
-        // 获取锁
-        lock.lock();
-        try {
-            // 执行命令
-            return command.execute();
-        } finally {
-            // 释放锁
-            lock.unlock();
-        }
+    public void shutdown() {
+        deviceManager.removeDevice(id);
+        deviceManager.execute(context -> context.shutdown(id));
     }
 }

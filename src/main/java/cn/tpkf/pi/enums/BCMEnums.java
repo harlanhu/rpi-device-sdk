@@ -10,7 +10,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum PinEnums {
+public enum BCMEnums {
 
     /**
      * gpio bcm number

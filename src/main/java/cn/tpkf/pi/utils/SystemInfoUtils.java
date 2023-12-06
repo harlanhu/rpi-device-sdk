@@ -1,5 +1,6 @@
 package cn.tpkf.pi.utils;
 
+import cn.tpkf.pi.pojo.PlatformInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,24 @@ public class SystemInfoUtils {
 
     private static final ReentrantLock LOCK = new ReentrantLock(true);
 
+    private static final PlatformInfo.CupInfo CPU_INFO = new PlatformInfo.CupInfo();
+
+    private static final PlatformInfo.MemoryInfo MEMORY_INFO = new PlatformInfo.MemoryInfo();
+
     static {
+        CentralProcessor processor = getHardware().getProcessor();
+        CentralProcessor.ProcessorIdentifier processorIdentifier = getHardware().getProcessor().getProcessorIdentifier();
+        CPU_INFO.setName(processorIdentifier.getName())
+                .setProcessorId(processorIdentifier.getProcessorID())
+                .setFamily(processorIdentifier.getFamily())
+                .setIs64Bit(processorIdentifier.isCpu64bit())
+                .setVendor(processorIdentifier.getVendor())
+                .setStepping(processorIdentifier.getStepping())
+                .setMicroArchitecture(processorIdentifier.getMicroarchitecture())
+                .setIdentifier(processorIdentifier.getIdentifier())
+                .setModel(processorIdentifier.getModel())
+                .setMaxFreq(processor.getMaxFreq());
+        MEMORY_INFO.setTotalMemory(getTotalMemory());
         long[] oldTicks = getSystemCpuLoadTicks();
         try {
             TimeUnit.SECONDS.sleep(3);
@@ -101,6 +119,17 @@ public class SystemInfoUtils {
 
     public static double getCpuTemperature() {
         return getHardware().getSensors().getCpuTemperature();
+    }
+
+    public static PlatformInfo getPlatformInfo() {
+        CPU_INFO.setUsageRate(getCpuUsageRate());
+        CPU_INFO.setTemperature(getCpuTemperature());
+        MEMORY_INFO.setUsedMemory(getUsedMemory());
+        MEMORY_INFO.setFreeMemory(getFreeMemory());
+        PlatformInfo platformInfo = new PlatformInfo();
+        platformInfo.setCupInfo(CPU_INFO);
+        platformInfo.setMemoryInfo(MEMORY_INFO);
+        return platformInfo;
     }
 
     @Data

@@ -5,16 +5,12 @@ import cn.tpkf.pi.devices.Device;
 import cn.tpkf.pi.exception.DeviceManagerException;
 import cn.tpkf.pi.pojo.PlatformInfo;
 import cn.tpkf.pi.utils.SystemInfoUtils;
-import com.alibaba.fastjson2.JSON;
 import com.pi4j.common.Descriptor;
 import com.pi4j.context.Context;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import oshi.hardware.CentralProcessor;
-import oshi.hardware.HardwareAbstractionLayer;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -142,40 +138,6 @@ public class DeviceManager {
     }
 
     public PlatformInfo getPlatformInfo() {
-        Descriptor contextDescribe = context.describe();
-        HardwareAbstractionLayer hardware = SystemInfoUtils.getHardware();
-        CentralProcessor.ProcessorIdentifier processorIdentifier = hardware.getProcessor().getProcessorIdentifier();
-        PlatformInfo platformInfo = new PlatformInfo();
-        PlatformInfo.CupInfo cupInfo = new PlatformInfo.CupInfo();
-        cupInfo.setName(processorIdentifier.getName())
-                .setModel(processorIdentifier.getModel())
-                .setFamily(processorIdentifier.getFamily())
-                .setIdentifier(processorIdentifier.getIdentifier())
-                .setVendor(processorIdentifier.getVendor())
-                .setMicroArchitecture(processorIdentifier.getMicroarchitecture())
-                .setStepping(processorIdentifier.getStepping())
-                .setProcessorId(processorIdentifier.getProcessorID())
-                .setIs64Bit(processorIdentifier.isCpu64bit())
-                .setVendorFreq(processorIdentifier.getVendorFreq())
-                .setMaxFreq(hardware.getProcessor().getMaxFreq())
-                .setUsageRate(SystemInfoUtils.getCpuUsageRate())
-                .setTemperature(SystemInfoUtils.getCpuTemperature());
-        platformInfo.setCupInfo(cupInfo);
-        PlatformInfo.MemoryInfo memoryInfo = new PlatformInfo.MemoryInfo();
-        memoryInfo.setFreeMemory(SystemInfoUtils.getFreeMemory())
-                .setTotalMemory(SystemInfoUtils.getTotalMemory())
-                .setUsedMemory(SystemInfoUtils.getUsedMemory());
-        platformInfo.setMemoryInfo(memoryInfo);
-        PlatformInfo.ContextInfo contextInfo = new PlatformInfo.ContextInfo();
-        contextInfo.setName(contextDescribe.name())
-                .setValue(JSON.toJSONString(contextDescribe.value()))
-                .setCategory(contextDescribe.category())
-                .setParent(JSON.toJSONString(contextDescribe.parent()))
-                .setDescription(contextDescribe.description())
-                .setId(contextDescribe.id())
-                .setQuantity(contextDescribe.quantity());
-        platformInfo.setContextInfo(contextInfo);
-        platformInfo.setCurrentTime(LocalDateTime.now());
-        return platformInfo;
+        return SystemInfoUtils.getPlatformInfo();
     }
 }

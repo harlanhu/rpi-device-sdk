@@ -24,8 +24,6 @@ public class PlatformInfo implements Serializable {
 
     private MemoryInfo memoryInfo;
 
-    private ContextInfo contextInfo;
-
     @Data
     @Accessors(chain = true)
     @AllArgsConstructor
@@ -73,11 +71,6 @@ public class PlatformInfo implements Serializable {
         private Boolean is64Bit;
 
         /**
-         * 供应商频率
-         */
-        private Long vendorFreq;
-
-        /**
          * 最大频率
          */
         private Long maxFreq;
@@ -118,26 +111,5 @@ public class PlatformInfo implements Serializable {
          * 空闲内存
          */
         private Long freeMemory;
-    }
-
-    @Data
-    @Accessors(chain = true)
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ContextInfo implements Serializable {
-
-        private String id;
-
-        private String name;
-
-        private String category;
-
-        private String description;
-
-        private Integer quantity;
-
-        private String parent;
-
-        private String value;
     }
 }
