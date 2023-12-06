@@ -1,10 +1,10 @@
-package cn.tpkf.pi.devices.pwm;
+package cn.tpkf.pi.devices.gpio.pwm;
 
-import cn.tpkf.pi.devices.AbstractDevice;
+import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.pwm.*;
-import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalInputProvider;
+import com.pi4j.plugin.linuxfs.provider.pwm.LinuxFsPwmProvider;
 import lombok.Getter;
 
 /**
@@ -14,30 +14,32 @@ import lombok.Getter;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
  */
-@Getter
-public abstract class AbstractPwmDevice extends AbstractDevice {
+public abstract class AbstractPwmDevice extends AbstractGpioDevice {
 
-    private final Pwm pwm;
+    protected final Pwm pwm;
 
-    private final BCMEnums address;
+    @Getter
+    protected final Number initial;
 
-    private final Number initial;
+    @Getter
+    protected final Number shutdown;
 
-    private final Number shutdown;
+    @Getter
+    protected final Number dutyCycle;
 
-    private final Number dutyCycle;
+    @Getter
+    protected final Integer frequency;
 
-    private final Integer frequency;
+    @Getter
+    protected final PwmPolarity polarity;
 
-    private final PwmPolarity polarity;
-
-    private final PwmType pwmType;
+    @Getter
+    protected final PwmType pwmType;
 
     protected AbstractPwmDevice(DeviceManager deviceManager, String id, String name,
                                 BCMEnums address, PwmType pwmType, Number initial, Number shutdown,
                                 Number dutyCycle, Integer frequency, PwmPolarity polarity) {
-        super(deviceManager, id, name);
-        this.address = address;
+        super(deviceManager, id, name, address);
         this.initial = initial;
         this.shutdown = shutdown;
         this.dutyCycle = dutyCycle;
@@ -56,14 +58,9 @@ public abstract class AbstractPwmDevice extends AbstractDevice {
                     .frequency(frequency)
                     .polarity(polarity)
                     .shutdown(shutdown)
-                    .provider(LinuxFsDigitalInputProvider.class)
+                    .provider(LinuxFsPwmProvider.class)
                     .build();
             return c.create(config);
         });
-    }
-
-    @Override
-    public String getDescription() {
-        return id + "-PWM-BCM " + address.getVale() + "-" + name;
     }
 }

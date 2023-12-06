@@ -1,6 +1,6 @@
-package cn.tpkf.pi.devices.digital.in;
+package cn.tpkf.pi.devices.gpio.digital.in;
 
-import cn.tpkf.pi.devices.digital.AbstractDigitalDevice;
+import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalInput;

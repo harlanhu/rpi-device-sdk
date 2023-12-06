@@ -1,6 +1,6 @@
-package cn.tpkf.pi.devices.digital;
+package cn.tpkf.pi.devices.gpio.digital;
 
-import cn.tpkf.pi.devices.AbstractDevice;
+import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalState;
@@ -14,13 +14,10 @@ import lombok.Getter;
  * @date 2023/12/6
  */
 @Getter
-public abstract class AbstractDigitalDevice extends AbstractDevice {
-
-    private final BCMEnums address;
+public abstract class AbstractDigitalDevice extends AbstractGpioDevice {
 
     protected AbstractDigitalDevice(DeviceManager deviceManager, String id, String name, BCMEnums address) {
-        super(deviceManager, id, name);
-        this.address = address;
+        super(deviceManager, id, name, address);
     }
 
     protected abstract DigitalState getState();
@@ -28,9 +25,4 @@ public abstract class AbstractDigitalDevice extends AbstractDevice {
     protected abstract boolean isHigh();
 
     protected abstract boolean isLow();
-
-    @Override
-    public String getDescription() {
-        return id + "-DO-BCM " + address.getVale() + "-" + name;
-    }
 }
