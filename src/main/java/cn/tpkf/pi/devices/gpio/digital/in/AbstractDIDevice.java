@@ -7,6 +7,7 @@ import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;
 import com.pi4j.io.gpio.digital.DigitalInputConfigBuilder;
 import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalInputProvider;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
 
 /**
  * 数字信号输入设备
@@ -27,7 +28,7 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
                     .name(name)
                     .address(address.getVale())
                     .description(getDescription())
-                    .provider(LinuxFsDigitalInputProvider.class)
+                    .provider(PiGpioDigitalInputProvider.class)
                     .build();
             return c.create(config);
         });

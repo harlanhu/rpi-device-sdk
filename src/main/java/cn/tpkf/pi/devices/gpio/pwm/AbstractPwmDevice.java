@@ -5,6 +5,8 @@ import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.pwm.*;
 import com.pi4j.plugin.linuxfs.provider.pwm.LinuxFsPwmProvider;
+import com.pi4j.plugin.pigpio.provider.pwm.PiGpioPwmProvider;
+
 import lombok.Getter;
 
 /**
@@ -58,7 +60,7 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
                     .frequency(frequency)
                     .polarity(polarity)
                     .shutdown(shutdown)
-                    .provider(LinuxFsPwmProvider.class)
+                    .provider(PiGpioPwmProvider.class)
                     .build();
             return c.create(config);
         });

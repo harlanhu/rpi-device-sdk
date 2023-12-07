@@ -6,7 +6,8 @@ import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
 import com.pi4j.io.i2c.I2CConfigBuilder;
-import com.pi4j.plugin.linuxfs.provider.i2c.LinuxFsI2CProvider;
+import com.pi4j.plugin.pigpio.provider.i2c.PiGpioI2CProvider;
+
 import lombok.Getter;
 
 /**
@@ -37,7 +38,7 @@ public abstract class AbstractI2CDevice extends AbstractGpioDevice {
                     .bus(bus)
                     .device(device)
                     .description(getDescription())
-                    .provider(LinuxFsI2CProvider.class)
+                    .provider(PiGpioI2CProvider.class)
                     .build();
             return c.create(config);
         });

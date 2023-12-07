@@ -10,6 +10,7 @@ import oshi.hardware.GlobalMemory;
 import oshi.hardware.HardwareAbstractionLayer;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -129,6 +130,7 @@ public class SystemInfoUtils {
         PlatformInfo platformInfo = new PlatformInfo();
         platformInfo.setCupInfo(CPU_INFO);
         platformInfo.setMemoryInfo(MEMORY_INFO);
+        platformInfo.setCurrentTime(LocalDateTime.now());
         return platformInfo;
     }
 

@@ -1,16 +1,17 @@
 package cn.tpkf.pi.devices.gpio.digital.out;
 
-import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
-import cn.tpkf.pi.enums.BCMEnums;
-import cn.tpkf.pi.manager.DeviceManager;
+import java.util.concurrent.TimeUnit;
+
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
 import com.pi4j.io.gpio.digital.DigitalOutputConfigBuilder;
 import com.pi4j.io.gpio.digital.DigitalState;
-import com.pi4j.plugin.linuxfs.provider.gpio.digital.LinuxFsDigitalOutputProvider;
-import lombok.Getter;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
 
-import java.util.concurrent.TimeUnit;
+import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
+import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.manager.DeviceManager;
+import lombok.Getter;
 
 /**
  * 数字信号输出设备
@@ -39,7 +40,7 @@ public class AbstractDODevice extends AbstractDigitalDevice {
                     .initial(initial)
                     .shutdown(shutdown)
                     .description(getDescription())
-                    .provider(LinuxFsDigitalOutputProvider.class)
+                    .provider(PiGpioDigitalOutputProvider.class)
                     .build();
             return c.create(config);
         });
