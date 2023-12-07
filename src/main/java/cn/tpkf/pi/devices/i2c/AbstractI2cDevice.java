@@ -1,6 +1,8 @@
-package cn.tpkf.pi.devices.gpio.i2c;
+package cn.tpkf.pi.devices.i2c;
 
+import cn.tpkf.pi.devices.AbstractDevice;
 import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
+import cn.tpkf.pi.devices.gpio.digital.out.AbstractDoDevice;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.i2c.I2C;
@@ -17,7 +19,7 @@ import lombok.Getter;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
  */
-public abstract class AbstractI2CDevice extends AbstractGpioDevice {
+public abstract class AbstractI2cDevice extends AbstractDevice {
 
     protected final I2C i2C;
 
@@ -27,8 +29,8 @@ public abstract class AbstractI2CDevice extends AbstractGpioDevice {
     @Getter
     protected final Integer device;
 
-    protected AbstractI2CDevice(DeviceManager deviceManager, String id, String name, Integer bus, Integer device, BCMEnums address) {
-        super(deviceManager, id, name, address);
+    protected AbstractI2cDevice(DeviceManager deviceManager, String id, String name, Integer bus, Integer device) {
+        super(deviceManager, id, name);
         this.bus = bus;
         this.device = device;
         i2C = deviceManager.execute(c -> {
@@ -42,5 +44,10 @@ public abstract class AbstractI2CDevice extends AbstractGpioDevice {
                     .build();
             return c.create(config);
         });
+    }
+
+    @Override
+    public String getDescription() {
+        return id + "-I2C-BUS " + bus + " DEVICE " + device + "-" + name;
     }
 }

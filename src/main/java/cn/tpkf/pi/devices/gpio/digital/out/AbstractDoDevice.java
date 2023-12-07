@@ -12,6 +12,7 @@ import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 数字信号输出设备
@@ -20,7 +21,8 @@ import lombok.Getter;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
  */
-public class AbstractDODevice extends AbstractDigitalDevice {
+@Slf4j
+public class AbstractDoDevice extends AbstractDigitalDevice {
 
     private final DigitalOutput digitalOutput;
 
@@ -30,7 +32,7 @@ public class AbstractDODevice extends AbstractDigitalDevice {
     @Getter
     private final DigitalState offState;
 
-    public AbstractDODevice(DeviceManager deviceManager, String id, String name, BCMEnums address, DigitalState initial, DigitalState shutdown) {
+    public AbstractDoDevice(DeviceManager deviceManager, String id, String name, BCMEnums address, DigitalState initial, DigitalState shutdown) {
         super(deviceManager, id, name, address);
         digitalOutput = deviceManager.execute(c -> {
             DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(c)
@@ -146,16 +148,15 @@ public class AbstractDODevice extends AbstractDigitalDevice {
 
     /**
      * 循环开启
-     * 
+     *
      * @param times 循环次数
      * @param interval 每次循环间隔
      * @param duration 单次闪烁持续时间
      * @param cycle 单次循环闪烁次数
      * @param timeUnit 时间单位
      * @param digitalState 闪烁状态
-     * @throws InterruptedException 中断异常
      */
-    public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) throws InterruptedException {
+    public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) {
         try {
             lock.lock();
             while (times >= 1) {
@@ -163,6 +164,9 @@ public class AbstractDODevice extends AbstractDigitalDevice {
                 times--;
                 timeUnit.sleep(interval);
             }
+        } catch (InterruptedException e) {
+            log.error("DigitalOutput device cycle error, thread has been interrupt: {}", e.getMessage());
+            Thread.currentThread().interrupt();
         } finally {
             lock.unlock();
         }
@@ -176,9 +180,8 @@ public class AbstractDODevice extends AbstractDigitalDevice {
      * @param duration 单次闪烁持续时间
      * @param cycle 单次循环闪烁次数
      * @param timeUnit 时间单位
-     * @throws InterruptedException 中断异常
      */
-    public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit) throws InterruptedException {
+    public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit) {
         cycle(times, interval, duration, cycle, timeUnit, onState);
     }
 

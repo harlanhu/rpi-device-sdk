@@ -24,6 +24,6 @@ public abstract class AbstractGpioDevice extends AbstractDevice {
 
     @Override
     public String getDescription() {
-        return id + "-BCM " + address.getVale() + "-" + name;
+        return id + "-GPIO-BCM " + address.getVale() + "-" + name;
     }
 }

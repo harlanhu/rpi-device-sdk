@@ -11,7 +11,7 @@ import com.pi4j.io.gpio.digital.DigitalState;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
  */
-public class Led extends AbstractDODevice {
+public class Led extends AbstractDoDevice {
 
     public Led(DeviceManager deviceManager, String id, String name, BCMEnums address) {
         super(deviceManager, id, name, address, DigitalState.LOW, DigitalState.LOW);

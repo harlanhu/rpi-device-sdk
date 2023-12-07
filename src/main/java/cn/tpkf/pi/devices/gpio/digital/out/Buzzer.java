@@ -11,7 +11,7 @@ import com.pi4j.io.gpio.digital.DigitalState;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/5
  */
-public class Buzzer extends AbstractDODevice {
+public class Buzzer extends AbstractDoDevice {
 
     public Buzzer(DeviceManager deviceManager, String id, String name, BCMEnums address) {
         super(deviceManager, id, name, address, DigitalState.LOW, DigitalState.LOW);

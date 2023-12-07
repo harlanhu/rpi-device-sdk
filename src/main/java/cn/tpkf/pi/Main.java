@@ -22,10 +22,5 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         Context context = Pi4J.newAutoContext();
         DeviceManager manager = new DeviceManager(context);
-        Led led = new Led(manager, "null", "null", BCMEnums.D4);
-        while (true) {
-            led.cycle(5, 200, 35, 5, TimeUnit.MILLISECONDS);
-            TimeUnit.SECONDS.sleep(1);
-        }
     }
 }
