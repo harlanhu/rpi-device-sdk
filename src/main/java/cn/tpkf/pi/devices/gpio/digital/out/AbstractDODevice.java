@@ -54,6 +54,9 @@ public class AbstractDODevice extends AbstractDigitalDevice {
         deviceManager.addDevice(this);
     }
 
+     /**
+      * 开启
+      */
     public void on() {
         try {
             lock.lock();
@@ -63,6 +66,9 @@ public class AbstractDODevice extends AbstractDigitalDevice {
         }
     }
 
+    /**
+     * 关闭
+     */
     public void off() {
         try {
             lock.lock();
@@ -72,6 +78,9 @@ public class AbstractDODevice extends AbstractDigitalDevice {
         }
     }
 
+    /**
+     * 切换
+     */
     public void toggle() {
         try {
             lock.lock();
@@ -81,34 +90,96 @@ public class AbstractDODevice extends AbstractDigitalDevice {
         }
     }
 
-    public void pulse(int interval, TimeUnit timeUnit, DigitalState digitalState) {
+    /**
+     * 单次开启
+     * 
+     * @param duration 持续时间
+     * @param timeUnit 时间单位
+     * @param digitalState 开启状态
+     */
+    public void pulse(int duration, TimeUnit timeUnit, DigitalState digitalState) {
         try {
             lock.lock();
-            digitalOutput.pulse(interval, timeUnit, digitalState);
+            digitalOutput.pulse(duration, timeUnit, digitalState);
         } finally {
             lock.unlock();
         }
     }
 
-    public void blink(int delay, int duration, TimeUnit timeUnit, DigitalState digitalState) {
+    /**
+     * 单次开启 onState
+     * 
+     * @param duration 持续时间
+     * @param timeUnit 时间单位
+     */
+    public void pulse(int duration, TimeUnit timeUnit) {
+        pulse(duration, timeUnit, onState);
+    }
+
+    /**
+     * 闪烁开启
+     * 
+     * @param duration 一次闪烁持续时间
+     * @param cycle 闪烁次数
+     * @param timeUnit 时间单位
+     * @param digitalState 闪烁状态
+     */
+    public void blink(int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) {
         try {
             lock.lock();
-            digitalOutput.blink(delay, duration, timeUnit, digitalState);
+            digitalOutput.blink(duration, cycle, timeUnit, digitalState);
         } finally {
             lock.unlock();
         }
     }
 
-    public void cycle(int cycle, int delay, int duration, TimeUnit timeUnit, DigitalState digitalState) {
+    /**
+     * 闪烁开启 onState
+     * 
+     * @param duration 一次闪烁持续时间
+     * @param cycle 闪烁次数
+     * @param timeUnit 时间单位
+     */
+    public void blink(int duration, int cycle, TimeUnit timeUnit) {
+        blink(duration, cycle, timeUnit, onState);
+    }
+
+    /**
+     * 循环开启
+     * 
+     * @param times 循环次数
+     * @param interval 每次循环间隔
+     * @param duration 单次闪烁持续时间
+     * @param cycle 单次循环闪烁次数
+     * @param timeUnit 时间单位
+     * @param digitalState 闪烁状态
+     * @throws InterruptedException 中断异常
+     */
+    public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) throws InterruptedException {
         try {
             lock.lock();
-            while (cycle >= 1) {
-                digitalOutput.blink(delay, duration, timeUnit, digitalState);
-                cycle--;
+            while (times >= 1) {
+                digitalOutput.blink(duration, cycle, timeUnit, digitalState);
+                times--;
+                timeUnit.sleep(interval);
             }
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * 循环开启 onState
+     * 
+     * @param times 循环次数
+     * @param interval 每次循环间隔
+     * @param duration 单次闪烁持续时间
+     * @param cycle 单次循环闪烁次数
+     * @param timeUnit 时间单位
+     * @throws InterruptedException 中断异常
+     */
+    public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit) throws InterruptedException {
+        cycle(times, interval, duration, cycle, timeUnit, onState);
     }
 
     @Override
