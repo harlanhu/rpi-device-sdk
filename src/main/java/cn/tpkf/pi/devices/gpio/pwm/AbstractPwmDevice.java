@@ -63,5 +63,41 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
                     .build();
             return c.create(config);
         });
+        deviceManager.addDevice(this);
+    }
+
+    public void on(Number dutyCycle, int frequency) {
+        try {
+            lock.lock();
+            pwm.on(dutyCycle, frequency);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void on(int frequency) {
+        try {
+            lock.lock();
+            pwm.on(frequency);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void off() {
+        try {
+            lock.lock();
+            pwm.off();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public boolean isOn() {
+        return pwm.isOn();
+    }
+
+    public boolean isOff() {
+        return pwm.isOff();
     }
 }

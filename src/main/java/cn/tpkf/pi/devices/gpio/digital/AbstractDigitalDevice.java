@@ -20,9 +20,23 @@ public abstract class AbstractDigitalDevice extends AbstractGpioDevice {
         super(deviceManager, id, name, address);
     }
 
+    /**
+     * 获取当前状态
+     * @return 状态
+     */
     protected abstract DigitalState getState();
 
+    /**
+     * 是否为高电平
+     *
+     * @return 是否为高电平
+     */
     protected abstract boolean isHigh();
 
+    /**
+     * 是否为低电平
+     *
+     * @return 是否为低电平
+     */
     protected abstract boolean isLow();
 }
