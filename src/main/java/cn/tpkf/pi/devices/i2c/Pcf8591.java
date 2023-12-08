@@ -1,10 +1,10 @@
 package cn.tpkf.pi.devices.i2c;
 
-import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author Harlan
@@ -15,13 +15,13 @@ public class Pcf8591 extends AbstractI2cDevice {
 
     public static final Integer DEFAULT_ADDRESS = 0x48;
 
-    public static final Byte AIN_0 = 0x00;
+    public static final Byte AIN_0 = 0x45;
 
-    private static final Byte AIN_1 = 0x01;
+    private static final Byte AIN_1 = 0x46;
 
-    private static final Byte AIN_2 = 0x02;
+    private static final Byte AIN_2 = 0x47;
 
-    private static final Byte AIN_3 = 0x03;
+    private static final Byte AIN_3 = 0x44;
 
     private final BigDecimal constantNum;
 
@@ -31,7 +31,8 @@ public class Pcf8591 extends AbstractI2cDevice {
     public Pcf8591(DeviceManager deviceManager, String id, String name, Integer bus, Integer device, Integer maxVoltage) {
         super(deviceManager, id, name, bus, device);
         this.maxVoltage = maxVoltage;
-        constantNum = BigDecimal.valueOf(maxVoltage / 255);
+        BigDecimal maxVoltageDecimal = new BigDecimal(maxVoltage);
+        constantNum = maxVoltageDecimal.divide(new BigDecimal(255), 4, RoundingMode.HALF_UP);
     }
 
     public Pcf8591(DeviceManager deviceManager, String id, String name, Integer bus) {

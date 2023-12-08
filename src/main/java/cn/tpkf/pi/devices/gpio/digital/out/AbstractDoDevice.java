@@ -1,18 +1,17 @@
 package cn.tpkf.pi.devices.gpio.digital.out;
 
-import java.util.concurrent.TimeUnit;
-
+import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
+import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
 import com.pi4j.io.gpio.digital.DigitalOutputConfigBuilder;
 import com.pi4j.io.gpio.digital.DigitalState;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
-
-import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
-import cn.tpkf.pi.enums.BCMEnums;
-import cn.tpkf.pi.manager.DeviceManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 数字信号输出设备
@@ -56,9 +55,9 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
         deviceManager.addDevice(this);
     }
 
-     /**
-      * 开启
-      */
+    /**
+     * 开启
+     */
     public void on() {
         try {
             lock.lock();
@@ -94,9 +93,9 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
 
     /**
      * 单次开启
-     * 
-     * @param duration 持续时间
-     * @param timeUnit 时间单位
+     *
+     * @param duration     持续时间
+     * @param timeUnit     时间单位
      * @param digitalState 开启状态
      */
     public void pulse(int duration, TimeUnit timeUnit, DigitalState digitalState) {
@@ -110,7 +109,7 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
 
     /**
      * 单次开启 onState
-     * 
+     *
      * @param duration 持续时间
      * @param timeUnit 时间单位
      */
@@ -120,10 +119,10 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
 
     /**
      * 闪烁开启
-     * 
-     * @param duration 一次闪烁持续时间
-     * @param cycle 闪烁次数
-     * @param timeUnit 时间单位
+     *
+     * @param duration     一次闪烁持续时间
+     * @param cycle        闪烁次数
+     * @param timeUnit     时间单位
      * @param digitalState 闪烁状态
      */
     public void blink(int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) {
@@ -137,9 +136,9 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
 
     /**
      * 闪烁开启 onState
-     * 
+     *
      * @param duration 一次闪烁持续时间
-     * @param cycle 闪烁次数
+     * @param cycle    闪烁次数
      * @param timeUnit 时间单位
      */
     public void blink(int duration, int cycle, TimeUnit timeUnit) {
@@ -149,11 +148,11 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
     /**
      * 循环开启
      *
-     * @param times 循环次数
-     * @param interval 每次循环间隔
-     * @param duration 单次闪烁持续时间
-     * @param cycle 单次循环闪烁次数
-     * @param timeUnit 时间单位
+     * @param times        循环次数
+     * @param interval     每次循环间隔
+     * @param duration     单次闪烁持续时间
+     * @param cycle        单次循环闪烁次数
+     * @param timeUnit     时间单位
      * @param digitalState 闪烁状态
      */
     public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) {
@@ -174,11 +173,11 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
 
     /**
      * 循环开启 onState
-     * 
-     * @param times 循环次数
+     *
+     * @param times    循环次数
      * @param interval 每次循环间隔
      * @param duration 单次闪烁持续时间
-     * @param cycle 单次循环闪烁次数
+     * @param cycle    单次循环闪烁次数
      * @param timeUnit 时间单位
      */
     public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit) {

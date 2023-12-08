@@ -1,15 +1,11 @@
 package cn.tpkf.pi.devices.i2c;
 
 import cn.tpkf.pi.devices.AbstractDevice;
-import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
-import cn.tpkf.pi.devices.gpio.digital.out.AbstractDoDevice;
-import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
 import com.pi4j.io.i2c.I2CConfigBuilder;
 import com.pi4j.plugin.pigpio.provider.i2c.PiGpioI2CProvider;
-
 import lombok.Getter;
 
 /**
