@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  */
 public class Pcf8591 extends AbstractI2cDevice {
 
-    public static final Integer DEFAULT_BUS = 0x48;
+    public static final Integer DEFAULT_ADDRESS = 0x48;
 
     public static final Byte AIN_0 = 0x00;
 
@@ -34,8 +34,8 @@ public class Pcf8591 extends AbstractI2cDevice {
         constantNum = BigDecimal.valueOf(maxVoltage / 255);
     }
 
-    public Pcf8591(DeviceManager deviceManager, String id, String name, Integer device) {
-        this(deviceManager, id, name, DEFAULT_BUS, device, 5);
+    public Pcf8591(DeviceManager deviceManager, String id, String name, Integer bus) {
+        this(deviceManager, id, name, bus, DEFAULT_ADDRESS, 5);
     }
 
     public double readAin0() {
