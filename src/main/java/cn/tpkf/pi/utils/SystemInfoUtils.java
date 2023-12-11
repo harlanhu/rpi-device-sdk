@@ -10,6 +10,9 @@ import oshi.hardware.GlobalMemory;
 import oshi.hardware.HardwareAbstractionLayer;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class SystemInfoUtils {
 
-    private static final SystemInfo systemInfo = new SystemInfo();
+    private static final SystemInfo SYSTEM_INFO = new SystemInfo();
 
     private static CpuTicksInfo cpuTicks;
 
@@ -32,6 +35,10 @@ public class SystemInfoUtils {
     private static final PlatformInfo.CupInfo CPU_INFO = new PlatformInfo.CupInfo();
 
     private static final PlatformInfo.MemoryInfo MEMORY_INFO = new PlatformInfo.MemoryInfo();
+
+    private static final long TIME_OUT = 2500;
+
+    private static final long UPDATE_SEC = 3;
 
     static {
         CentralProcessor processor = getHardware().getProcessor();
@@ -45,11 +52,33 @@ public class SystemInfoUtils {
                 .setMicroArchitecture(processorIdentifier.getMicroarchitecture())
                 .setIdentifier(processorIdentifier.getIdentifier())
                 .setModel(processorIdentifier.getModel())
+                .setProcessorCount(processor.getLogicalProcessorCount())
                 .setMaxFreq(processor.getMaxFreq());
         MEMORY_INFO.setTotalMemory(getTotalMemory());
         long[] oldTicks = getSystemCpuLoadTicks();
+        long[] newTicks = getSystemCpuLoadTicks();
+        setCpuTicks(oldTicks, newTicks);
+        Thread cpuTicksUpdater = new Thread(() -> {
+            while (true) {
+                try {
+                    updateCpuTicks();
+                } catch (Exception e) {
+                    log.warn("update cpu ticks error: {}", e.getMessage());
+                }
+            }
+        });
+        cpuTicksUpdater.setDaemon(true);
+        cpuTicksUpdater.start();
+    }
+
+    private SystemInfoUtils() {
+        //DO NOTHING
+    }
+
+    private static void updateCpuTicks() {
+        long[] oldTicks = getSystemCpuLoadTicks();
         try {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(UPDATE_SEC);
         } catch (InterruptedException e) {
             log.error("init calculate system info error: {}", e.getMessage());
             Thread.currentThread().interrupt();
@@ -58,13 +87,9 @@ public class SystemInfoUtils {
         setCpuTicks(oldTicks, newTicks);
     }
 
-    private SystemInfoUtils() {
-        //DO NOTHING
-    }
-
     private static void setCpuTicks(long[] oldTicks, long[] newTicks) {
         try {
-            if (LOCK.tryLock(2500, TimeUnit.MICROSECONDS)) {
+            if (LOCK.tryLock(TIME_OUT, TimeUnit.MICROSECONDS)) {
                 cpuTicks = new CpuTicksInfo(oldTicks, newTicks);
             }
         } catch (InterruptedException e) {
@@ -77,7 +102,7 @@ public class SystemInfoUtils {
 
     private static CpuTicksInfo getCpuTicks() {
         try {
-            if (LOCK.tryLock(2500, TimeUnit.MICROSECONDS)) {
+            if (LOCK.tryLock(TIME_OUT, TimeUnit.MICROSECONDS)) {
                 return cpuTicks;
             }
         } catch (InterruptedException e) {
@@ -90,11 +115,11 @@ public class SystemInfoUtils {
     }
 
     public static CentralProcessor getCentralProcess() {
-        return systemInfo.getHardware().getProcessor();
+        return SYSTEM_INFO.getHardware().getProcessor();
     }
 
     public static HardwareAbstractionLayer getHardware() {
-        return systemInfo.getHardware();
+        return SYSTEM_INFO.getHardware();
     }
 
     public static long getTotalMemory() {
@@ -138,15 +163,11 @@ public class SystemInfoUtils {
     @NoArgsConstructor
     private static class CpuTicksInfo implements Serializable {
 
-        private long[] oldTicks;
-
-        private long[] newTicks;
-
         private long nice;
 
-        private long iRQ;
+        private long irq;
 
-        private long softIRQ;
+        private long softIrq;
 
         private long steal;
 
@@ -154,7 +175,7 @@ public class SystemInfoUtils {
 
         private long user;
 
-        private long iOWait;
+        private long ioWait;
 
         private long idle;
 
@@ -170,22 +191,23 @@ public class SystemInfoUtils {
 
         public CpuTicksInfo(long[] oldTicks, long[] newTicks) {
             this.nice = newTicks[CentralProcessor.TickType.NICE.getIndex()] - oldTicks[CentralProcessor.TickType.NICE.getIndex()];
-            this.iRQ = newTicks[CentralProcessor.TickType.IRQ.getIndex()] - oldTicks[CentralProcessor.TickType.IRQ.getIndex()];
-            this.softIRQ = newTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()] - oldTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()];
+            this.irq = newTicks[CentralProcessor.TickType.IRQ.getIndex()] - oldTicks[CentralProcessor.TickType.IRQ.getIndex()];
+            this.softIrq = newTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()] - oldTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()];
             this.steal = newTicks[CentralProcessor.TickType.STEAL.getIndex()] - oldTicks[CentralProcessor.TickType.STEAL.getIndex()];
             this.system = newTicks[CentralProcessor.TickType.SYSTEM.getIndex()] - oldTicks[CentralProcessor.TickType.SYSTEM.getIndex()];
             this.user = newTicks[CentralProcessor.TickType.USER.getIndex()] - oldTicks[CentralProcessor.TickType.USER.getIndex()];
-            this.iOWait = newTicks[CentralProcessor.TickType.IOWAIT.getIndex()] - oldTicks[CentralProcessor.TickType.IOWAIT.getIndex()];
+            this.ioWait = newTicks[CentralProcessor.TickType.IOWAIT.getIndex()] - oldTicks[CentralProcessor.TickType.IOWAIT.getIndex()];
             this.idle = newTicks[CentralProcessor.TickType.IDLE.getIndex()] - oldTicks[CentralProcessor.TickType.IDLE.getIndex()];
-            this.total = user + nice + system + idle + iOWait + iRQ + softIRQ + steal;
-            this.sysUsageRate = rate(system, total);
-            this.userUsageRate = rate(user, total);
-            this.waitUsageRate = rate(iOWait, total);
-            this.usageRate = rate(idle, total);
+            this.total = user + nice + system + idle + ioWait + irq + softIrq + steal;
+            this.sysUsageRate = divide(system, total);
+            this.userUsageRate = divide(user, total);
+            this.waitUsageRate = divide(ioWait, total);
+            this.usageRate = divide(idle, total);
         }
 
-        private double rate(long num, long divide) {
-            return 1 - (double) num / (double) divide;
+        private double divide(long num, long divide) {
+            BigDecimal result  = new BigDecimal(num).divide(new BigDecimal(divide), 4, RoundingMode.HALF_UP);
+            return new BigDecimal(1).subtract(result, new MathContext(4)).doubleValue();
         }
     }
 }

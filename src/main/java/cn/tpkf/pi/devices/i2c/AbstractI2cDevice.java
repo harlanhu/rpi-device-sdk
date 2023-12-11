@@ -40,6 +40,7 @@ public abstract class AbstractI2cDevice extends AbstractDevice {
                     .build();
             return c.create(config);
         });
+        deviceManager.addDevice(this);
     }
 
     @Override

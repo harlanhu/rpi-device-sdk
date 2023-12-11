@@ -31,5 +31,6 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
                     .build();
             return c.create(config);
         });
+        deviceManager.addDevice(this);
     }
 }

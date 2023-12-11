@@ -51,6 +51,11 @@ public class PlatformInfo implements Serializable {
         private String model;
 
         /**
+         * 核心数
+         */
+        private Integer processorCount;
+
+        /**
          * 步进
          */
         private String stepping;

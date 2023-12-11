@@ -5,6 +5,7 @@ import cn.tpkf.pi.devices.Device;
 import cn.tpkf.pi.exception.DeviceManagerException;
 import cn.tpkf.pi.pojo.PlatformInfo;
 import cn.tpkf.pi.utils.SystemInfoUtils;
+import com.pi4j.Pi4J;
 import com.pi4j.common.Descriptor;
 import com.pi4j.context.Context;
 import lombok.AllArgsConstructor;
@@ -42,6 +43,12 @@ public class DeviceManager {
     private final ReentrantLock lock;
 
     private final Map<String, Device> devices = new ConcurrentHashMap<>();
+
+    public DeviceManager() {
+        this.context = Pi4J.newAutoContext();
+        this.timeOutMillis = 2000L;
+        this.lock = new ReentrantLock();
+    }
 
     public DeviceManager(Context context) {
         this(context, 2000L);
