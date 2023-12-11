@@ -14,6 +14,10 @@ import com.pi4j.io.gpio.digital.DigitalState;
 public class ActiveBuzzer extends AbstractDoDevice {
 
     public ActiveBuzzer(DeviceManager deviceManager, String id, String name, BCMEnums address) {
-        super(deviceManager, id, name, address, DigitalState.LOW, DigitalState.LOW);
+        super(deviceManager, id, name, address, DigitalState.HIGH, DigitalState.HIGH);
+    }
+
+    public ActiveBuzzer(DeviceManager deviceManager, String id, String name, BCMEnums address, DigitalState initial) {
+        super(deviceManager, id, name, address, initial, initial);
     }
 }
