@@ -16,6 +16,14 @@ import lombok.Getter;
 @Getter
 public abstract class AbstractDigitalDevice extends AbstractGpioDevice {
 
+    /**
+     * Initializes an instance of the AbstractDigitalDevice class.
+     *
+     * @param deviceManager The DeviceManager instance.
+     * @param id            The ID of the device.
+     * @param name          The name of the device.
+     * @param address       The BCMEnums address of the device.
+     */
     protected AbstractDigitalDevice(DeviceManager deviceManager, String id, String name, BCMEnums address) {
         super(deviceManager, id, name, address);
     }

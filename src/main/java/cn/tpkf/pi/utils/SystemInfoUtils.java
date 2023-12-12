@@ -140,7 +140,11 @@ public class SystemInfoUtils {
     }
 
     public static double getCpuUsageRate() {
-        return Objects.requireNonNull(getCpuTicks()).getUsageRate();
+        CpuTicksInfo cpuInfo = getCpuTicks();
+        if (Objects.isNull(cpuInfo)) {
+            return 0;
+        }
+        return cpuInfo.getUsageRate();
     }
 
     public static double getCpuTemperature() {

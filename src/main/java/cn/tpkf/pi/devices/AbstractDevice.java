@@ -25,6 +25,13 @@ public abstract class AbstractDevice implements Device {
      */
     protected final ReentrantLock lock;
 
+    /**
+     * Represents an abstract device.
+     *
+     * @param deviceManager the DeviceManager instance
+     * @param id the ID of the device
+     * @param name the name of the device
+     */
     protected AbstractDevice(DeviceManager deviceManager, String id, String name) {
         this.id = id;
         this.name = name;

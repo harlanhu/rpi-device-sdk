@@ -17,6 +17,14 @@ public abstract class AbstractGpioDevice extends AbstractDevice {
 
     protected final BCMEnums address;
 
+    /**
+     * Creates an instance of the AbstractGpioDevice class.
+     *
+     * @param deviceManager The DeviceManager instance.
+     * @param id            The ID of the device.
+     * @param name          The name of the device.
+     * @param address       The BCMEnums address of the device.
+     */
     protected AbstractGpioDevice(DeviceManager deviceManager, String id, String name, BCMEnums address) {
         super(deviceManager, id, name);
         this.address = address;

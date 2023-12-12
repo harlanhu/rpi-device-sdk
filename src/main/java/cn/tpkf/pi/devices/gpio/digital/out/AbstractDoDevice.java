@@ -31,6 +31,16 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
     @Getter
     private final DigitalState offState;
 
+    /**
+     * Constructor for AbstractDoDevice.
+     *
+     * @param deviceManager The DeviceManager instance.
+     * @param id The unique identifier for the device.
+     * @param name The name of the device.
+     * @param address The address of the device.
+     * @param initial The initial state of the device.
+     * @param shutdown The shutdown state of the device.
+     */
     public AbstractDoDevice(DeviceManager deviceManager, String id, String name, BCMEnums address, DigitalState initial, DigitalState shutdown) {
         super(deviceManager, id, name, address);
         digitalOutput = deviceManager.execute(c -> {

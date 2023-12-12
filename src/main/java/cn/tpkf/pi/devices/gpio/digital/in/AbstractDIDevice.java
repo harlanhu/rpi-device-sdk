@@ -3,10 +3,9 @@ package cn.tpkf.pi.devices.gpio.digital.in;
 import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
-import com.pi4j.io.gpio.digital.DigitalInput;
-import com.pi4j.io.gpio.digital.DigitalInputConfig;
-import com.pi4j.io.gpio.digital.DigitalInputConfigBuilder;
+import com.pi4j.io.gpio.digital.*;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 数字信号输入设备
@@ -15,22 +14,75 @@ import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
  */
+@Slf4j
 public abstract class AbstractDIDevice extends AbstractDigitalDevice {
 
     protected final DigitalInput digitalInput;
 
-    protected AbstractDIDevice(DeviceManager deviceManager, String id, String name, BCMEnums address) {
+    protected final PullResistance pull;
+
+    protected final long debounceMicSec;
+
+    protected final Runnable onUpTask;
+
+    protected final Runnable onDownTask;
+
+    /**
+     *
+     * Initializes an instance of the AbstractDIDevice class.
+     *
+     * @param deviceManager The DeviceManager instance.
+     * @param id The ID of the device.
+     * @param name The name of the device.
+     * @param address The BCMEnums address of the device.
+     * @param inverted Indicates whether the input signal is inverted.
+     * @param debounceMicSec The debounce time in microseconds.
+     * @param onUpTask The task to be executed when the input signal goes from low to high.
+     * @param onDownTask The task to be executed when the input signal goes from high to low.
+     */
+    protected AbstractDIDevice(DeviceManager deviceManager, String id, String name,
+                               BCMEnums address, boolean inverted, long debounceMicSec,
+                               Runnable onUpTask, Runnable onDownTask) {
         super(deviceManager, id, name, address);
+        this.pull = inverted ? PullResistance.PULL_UP : PullResistance.PULL_DOWN;
+        this.debounceMicSec = debounceMicSec;
+        this.onUpTask = onUpTask;
+        this.onDownTask = onDownTask;
         digitalInput = deviceManager.execute(c -> {
             DigitalInputConfig config = DigitalInputConfigBuilder.newInstance(c)
                     .id(id)
                     .name(name)
                     .address(address.getVale())
                     .description(getDescription())
+                    .pull(pull)
+                    .debounce(debounceMicSec)
                     .provider(PiGpioDigitalInputProvider.class)
                     .build();
             return c.create(config);
         });
+        digitalInput.addListener(event -> {
+            DigitalState state = getState();
+            switch (state) {
+                case HIGH -> onUpTask.run();
+                case LOW -> onDownTask.run();
+                case UNKNOWN -> log.warn("Unknown state for device: {}", getDescription());
+            }
+        });
         deviceManager.addDevice(this);
+    }
+
+    @Override
+    protected DigitalState getState() {
+        return digitalInput.state();
+    }
+
+    @Override
+    protected boolean isHigh() {
+        return digitalInput.isHigh();
+    }
+
+    @Override
+    protected boolean isLow() {
+        return digitalInput.isLow();
     }
 }

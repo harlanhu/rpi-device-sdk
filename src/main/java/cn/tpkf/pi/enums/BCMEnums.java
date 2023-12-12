@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * BCM 引脚编号
+ *
  * @author Harlan
  * @email isharlan.hu@gmail.com
  * @date 2023 12 02 下午 08:28
