@@ -63,15 +63,17 @@ public class DeviceManager {
     /**
      * 打印横幅
      */
-    public void printBanner() {
+    public String printBanner() {
         // 读取横幅文本
         String banner = ResourceUtil.readUtf8Str("static/banner.txt");
         // 获取当前上下文的平台描述
         Descriptor describe = context.platform().describe();
         // 打印横幅和平台描述信息
-        log.info("\n{}\nId: {}\nName: {}\nCategory: {}\nQuantity: {}\nParent: {}\nValue: {}\n",
+        String describeInfo = String.format("%s%nId: %s%nName: %s%nCategory: %s%nQuantity: %s%nParent: %s%nValue: %s%n",
                 banner, describe.id(), describe.name(), describe.category(), describe.quantity(), describe.parent(),
                 describe.value());
+        log.info(describeInfo);
+        return describeInfo;
     }
 
     /**
