@@ -26,6 +26,3 @@ workflows:
   build-workflow:
     jobs:
       - build
-      - save-test-results:
-          requires:
-            - build
