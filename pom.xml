@@ -14,7 +14,6 @@
         <java.version>19</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
-        <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <pi4j.version>2.4.0</pi4j.version>
         <oshi-core.version>6.4.7</oshi-core.version>
