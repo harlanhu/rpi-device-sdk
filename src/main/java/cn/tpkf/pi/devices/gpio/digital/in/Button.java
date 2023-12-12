@@ -21,7 +21,7 @@ public class Button extends AbstractDIDevice {
      * @param onUpTask       The task to be executed when the input signal goes from low to high.
      * @param onDownTask     The task to be executed when the input signal goes from high to low.
      */
-    protected Button(DeviceManager deviceManager, String id, String name, BCMEnums address, boolean inverted, long debounceMicSec, Runnable onUpTask, Runnable onDownTask) {
+    public Button(DeviceManager deviceManager, String id, String name, BCMEnums address, boolean inverted, long debounceMicSec, Runnable onUpTask, Runnable onDownTask) {
         super(deviceManager, id, name, address, inverted, debounceMicSec, onUpTask, onDownTask);
     }
 }
