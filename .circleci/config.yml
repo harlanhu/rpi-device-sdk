@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: openjdk:22-jdk-oracle
+      - image: maven:latest
     working_directory: /pi-device-sdk
     steps:
       - checkout
