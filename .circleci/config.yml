@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
       - image: maven:latest
-    working_directory: /pi-device-sdk
+    working_directory: ~/pi-device-sdk
     steps:
       - checkout
       - restore_cache:
@@ -13,8 +13,20 @@ jobs:
       - run:
           name: package
           command: mvn package
+  test:
+    - run:
+        name: test
+        command: |
+          mkdir -p ~/test-results/junit/
+          find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+        when: always
+    - store_test_results:
+        path: ~/test-results
 
 workflows:
   build-workflow:
     jobs:
       - build
+      - test:
+          requires:
+            - build
