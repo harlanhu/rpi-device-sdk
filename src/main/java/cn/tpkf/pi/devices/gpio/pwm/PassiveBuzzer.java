@@ -14,7 +14,7 @@ import com.pi4j.io.pwm.PwmType;
  */
 public class PassiveBuzzer extends AbstractPwmDevice {
 
-    protected PassiveBuzzer(DeviceManager deviceManager, String id, String name, BCMEnums address, PwmType pwmType, Number initial, Number shutdown, Number dutyCycle, Integer frequency, PwmPolarity polarity) {
+    public PassiveBuzzer(DeviceManager deviceManager, String id, String name, BCMEnums address, PwmType pwmType, Number initial, Number shutdown, Number dutyCycle, Integer frequency, PwmPolarity polarity) {
         super(deviceManager, id, name, address, pwmType, initial, shutdown, dutyCycle, frequency, polarity);
     }
 }
