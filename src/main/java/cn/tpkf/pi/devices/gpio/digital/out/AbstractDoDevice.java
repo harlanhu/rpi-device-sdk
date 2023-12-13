@@ -23,11 +23,20 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AbstractDoDevice extends AbstractDigitalDevice {
 
+    /**
+     * The DigitalOutput instance.
+     */
     private final DigitalOutput digitalOutput;
 
+    /**
+     * The on state.
+     */
     @Getter
     private final DigitalState onState;
 
+    /**
+     * The off state.
+     */
     @Getter
     private final DigitalState offState;
 

@@ -15,6 +15,9 @@ import lombok.Getter;
 @Getter
 public abstract class AbstractGpioDevice extends AbstractDevice {
 
+    /**
+     * The BCMEnums address of the device.
+     */
     protected final BCMEnums address;
 
     /**

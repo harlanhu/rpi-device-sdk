@@ -12,12 +12,21 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class AbstractDevice implements Device {
 
+    /**
+     * 设备ID
+     */
     @Getter
     protected final String id;
 
+    /**
+     * 设备名称
+     */
     @Getter
     protected final String name;
 
+    /**
+     * 设备管理器
+     */
     protected final DeviceManager deviceManager;
 
     /**

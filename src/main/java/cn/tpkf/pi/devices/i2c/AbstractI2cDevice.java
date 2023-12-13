@@ -17,14 +17,31 @@ import lombok.Getter;
  */
 public abstract class AbstractI2cDevice extends AbstractDevice {
 
+    /**
+     * The I2C instance.
+     */
     protected final I2C i2C;
 
+    /**
+     * The bus.
+     */
     @Getter
     protected final Integer bus;
 
+    /**
+     * The device.
+     */
     @Getter
     protected final Integer device;
 
+    /**
+     * Creates an instance of the AbstractI2cDevice class.
+     * @param deviceManager The DeviceManager instance.
+     * @param id The ID of the device.
+     * @param name The name of the device.
+     * @param bus The bus.
+     * @param device The device.
+     */
     protected AbstractI2cDevice(DeviceManager deviceManager, String id, String name, Integer bus, Integer device) {
         super(deviceManager, id, name);
         this.bus = bus;

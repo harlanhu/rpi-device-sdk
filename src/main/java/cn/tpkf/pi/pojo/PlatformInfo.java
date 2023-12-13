@@ -18,10 +18,19 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PlatformInfo implements Serializable {
 
+    /**
+     * 当前时间
+     */
     private LocalDateTime currentTime;
 
+    /**
+     * Cpu信息
+     */
     private CupInfo cupInfo;
 
+    /**
+     * 内存信息
+     */
     private MemoryInfo memoryInfo;
 
     @Data

@@ -17,14 +17,29 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractDIDevice extends AbstractDigitalDevice {
 
+    /**
+     * The DigitalInput instance.
+     */
     protected final DigitalInput digitalInput;
 
+    /**
+     * The pull resistance.
+     */
     protected final PullResistance pull;
 
+    /**
+     * The debounce time in microseconds.
+     */
     protected final long debounceMicSec;
 
+    /**
+     * The task to be executed when the input signal goes from low to high.
+     */
     protected final Runnable onUpTask;
 
+    /**
+     * The task to be executed when the input signal goes from high to low.
+     */
     protected final Runnable onDownTask;
 
     /**

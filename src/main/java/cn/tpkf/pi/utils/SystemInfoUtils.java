@@ -75,6 +75,9 @@ public class SystemInfoUtils {
         //DO NOTHING
     }
 
+    /**
+     * 更新CPU信息
+     */
     private static void updateCpuTicks() {
         long[] oldTicks = getSystemCpuLoadTicks();
         try {
@@ -87,6 +90,11 @@ public class SystemInfoUtils {
         setCpuTicks(oldTicks, newTicks);
     }
 
+    /**
+     * 设置CPU信息
+     * @param oldTicks oldTicks
+     * @param newTicks newTicks
+     */
     private static void setCpuTicks(long[] oldTicks, long[] newTicks) {
         try {
             if (LOCK.tryLock(TIME_OUT, TimeUnit.MICROSECONDS)) {
@@ -100,6 +108,11 @@ public class SystemInfoUtils {
         }
     }
 
+    /**
+     * 获取CPU信息
+     *
+     * @return CpuTicksInfo
+     */
     private static CpuTicksInfo getCpuTicks() {
         try {
             if (LOCK.tryLock(TIME_OUT, TimeUnit.MICROSECONDS)) {
@@ -114,31 +127,66 @@ public class SystemInfoUtils {
         return null;
     }
 
+    /**
+     * 获取CPU信息
+     *
+     * @return CentralProcessor
+     */
     public static CentralProcessor getCentralProcess() {
         return SYSTEM_INFO.getHardware().getProcessor();
     }
 
+    /**
+     * 获取硬件信息
+     *
+     * @return HardwareAbstractionLayer
+     */
     public static HardwareAbstractionLayer getHardware() {
         return SYSTEM_INFO.getHardware();
     }
 
+    /**
+     * 获取总内存
+     *
+     * @return 总内存
+     */
     public static long getTotalMemory() {
         GlobalMemory globalMemory = getHardware().getMemory();
         return globalMemory.getTotal();
     }
 
+    /**
+     * 获取已使用内存
+     *
+     * @return 已使用内存
+     */
     public static long getUsedMemory() {
         return getTotalMemory() - getFreeMemory();
     }
 
+    /**
+     * 获取空闲内存
+     *
+     * @return 空闲内存
+     */
     public static long getFreeMemory() {
         return getHardware().getMemory().getAvailable();
     }
 
+    /**
+     * 获取系统CPU负载
+     *
+     * @return 系统CPU负载
+     */
     public static long[] getSystemCpuLoadTicks() {
         return getCentralProcess().getSystemCpuLoadTicks();
     }
 
+    /**
+     * 获取CPU使用率
+     *
+     * @return CPU使用率
+     */
     public static double getCpuUsageRate() {
         CpuTicksInfo cpuInfo = getCpuTicks();
         if (Objects.isNull(cpuInfo)) {
@@ -147,10 +195,20 @@ public class SystemInfoUtils {
         return cpuInfo.getUsageRate();
     }
 
+    /**
+     * 获取CPU温度
+     *
+     * @return CPU温度
+     */
     public static double getCpuTemperature() {
         return getHardware().getSensors().getCpuTemperature();
     }
 
+    /**
+     * 获取平台信息
+     *
+     * @return 平台信息
+     */
     public static PlatformInfo getPlatformInfo() {
         CPU_INFO.setUsageRate(getCpuUsageRate());
         CPU_INFO.setTemperature(getCpuTemperature());

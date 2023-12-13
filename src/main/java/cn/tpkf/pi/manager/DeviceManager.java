@@ -150,6 +150,11 @@ public class DeviceManager {
         return true;
     }
 
+    /**
+     * 获取平台信息
+     *
+     * @return 平台信息
+     */
     public PlatformInfo getPlatformInfo() {
         return SystemInfoUtils.getPlatformInfo();
     }

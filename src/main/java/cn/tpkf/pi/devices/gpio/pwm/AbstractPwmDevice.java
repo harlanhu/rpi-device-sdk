@@ -17,26 +17,60 @@ import lombok.Getter;
  */
 public abstract class AbstractPwmDevice extends AbstractGpioDevice {
 
+    /**
+     * The PWM instance.
+     */
     protected final Pwm pwm;
 
+    /**
+     * The initial state.
+     */
     @Getter
     protected final Number initial;
 
+    /**
+     * The shutdown state.
+     */
     @Getter
     protected final Number shutdown;
 
+    /**
+     * The duty cycle.
+     */
     @Getter
     protected final Number dutyCycle;
 
+    /**
+     * The frequency.
+     */
     @Getter
     protected final Integer frequency;
 
+    /**
+     * The polarity.
+     */
     @Getter
     protected final PwmPolarity polarity;
 
+    /**
+     * The PWM type.
+     */
     @Getter
     protected final PwmType pwmType;
 
+    /**
+     * Creates an instance of the AbstractPwmDevice class.
+     * @param deviceManager The DeviceManager instance.
+     * @param id The ID of the device.
+     * @param name The name of the device.
+     * @param address The BCMEnums address of the device.
+     * @param pwmType The PWM type.
+     * @param initial The initial state.
+     * @param shutdown The shutdown state.
+     * @param dutyCycle The duty cycle.
+     * @param frequency The frequency.
+     * @param polarity The polarity.
+     */
     protected AbstractPwmDevice(DeviceManager deviceManager, String id, String name,
                                 BCMEnums address, PwmType pwmType, Number initial, Number shutdown,
                                 Number dutyCycle, Integer frequency, PwmPolarity polarity) {
@@ -66,6 +100,12 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
         deviceManager.addDevice(this);
     }
 
+    /**
+     * on
+     *
+     * @param dutyCycle The duty cycle.
+     * @param frequency The frequency.
+     */
     public void on(Number dutyCycle, int frequency) {
         try {
             lock.lock();
@@ -75,6 +115,11 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
         }
     }
 
+    /**
+     * on
+     *
+     * @param frequency The frequency.
+     */
     public void on(int frequency) {
         try {
             lock.lock();
@@ -84,6 +129,9 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
         }
     }
 
+    /**
+     * off
+     */
     public void off() {
         try {
             lock.lock();
@@ -93,10 +141,20 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
         }
     }
 
+    /**
+     * isOn
+     *
+     * @return true if the PWM is on.
+     */
     public boolean isOn() {
         return pwm.isOn();
     }
 
+    /**
+     * isOff
+     *
+     * @return true if the PWM is off.
+     */
     public boolean isOff() {
         return pwm.isOff();
     }
