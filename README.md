@@ -13,3 +13,5 @@ The equipment list will be updated continuously.
 coming soon...
 ## last
 Thank [PI4J](https://github.com/Pi4J) very much for providing such a good raspberry pi I/O library.
+
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=harlanhu_pi-device-sdk)
