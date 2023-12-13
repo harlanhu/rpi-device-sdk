@@ -26,6 +26,8 @@
         <junit.platform.launcher.version>1.10.0</junit.platform.launcher.version>
         <junit.vintage.engine>5.10.0</junit.vintage.engine>
         <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
+        <sonar.organization>tangping</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencies>
