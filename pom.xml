@@ -13,13 +13,13 @@
     <properties>
         <java.version>19</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <pi4j.version>2.4.0</pi4j.version>
-        <oshi-core.version>6.4.7</oshi-core.version>
+        <oshi.core.version>6.4.7</oshi.core.version>
         <fastjson2.version>2.0.37</fastjson2.version>
-        <hutool-all.version>5.8.23</hutool-all.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <hutool.all.version>5.8.23</hutool.all.version>
+        <commons.lang3.version>3.12.0</commons.lang3.version>
         <slf4j.version>2.0.9</slf4j.version>
         <lombok.version>1.18.30</lombok.version>
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>com.github.oshi</groupId>
             <artifactId>oshi-core</artifactId>
-            <version>${oshi-core.version}</version>
+            <version>${oshi.core.version}</version>
         </dependency>
 
         <dependency>
@@ -70,13 +70,13 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>${hutool-all.version}</version>
+            <version>${hutool.all.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
+            <version>${commons.lang3.version}</version>
         </dependency>
 
         <dependency>
