@@ -1,4 +1,4 @@
-package cn.tpkf.pi.exception.enums;
+package cn.tpkf.pi.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -175,5 +175,5 @@ public enum BCMEnums implements IBCMEnums {
      */
     BCM_21(21);
 
-    private final int value;
+    private final Integer value;
 }

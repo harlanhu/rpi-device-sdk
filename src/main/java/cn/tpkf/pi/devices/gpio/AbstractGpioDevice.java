@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices.gpio;
 
 import cn.tpkf.pi.devices.AbstractDevice;
-import cn.tpkf.pi.exception.enums.IBCMEnums;
+import cn.tpkf.pi.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import lombok.Getter;
 

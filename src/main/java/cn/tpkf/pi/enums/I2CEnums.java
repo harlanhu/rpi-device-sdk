@@ -1,10 +1,10 @@
-package cn.tpkf.pi.exception.enums;
+package cn.tpkf.pi.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * PCM (Pulse-code Modulation)
+ * Inter Integrated Circuit
  *
  * @author Harlan
  * @email isharlan.hu@gmali.com
@@ -12,15 +12,15 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum PCMEnums implements IBCMEnums {
+public enum I2CEnums implements IBCMEnums {
 
-    FS(19),
+    SDA(2),
 
-    CLK(18),
+    SCL(3),
 
-    DIN(20),
+    EEPROM_SDA(0),
 
-    DOUT(21);
+    EEPROM_SCL(1);
 
     private final Integer value;
 }

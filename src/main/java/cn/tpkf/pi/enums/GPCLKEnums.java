@@ -1,10 +1,10 @@
-package cn.tpkf.pi.exception.enums;
+package cn.tpkf.pi.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * Inter Integrated Circuit
+ * General Purpose CLock
  *
  * @author Harlan
  * @email isharlan.hu@gmali.com
@@ -12,15 +12,13 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum I2CEnums implements IBCMEnums {
+public enum GPCLKEnums implements IBCMEnums {
 
-    SDA(2),
+    GPCLK_4(4),
 
-    SCL(3),
+    GPCLK_5(5),
 
-    EEPROM_SDA(0),
-
-    EEPROM_SCL(1);
+    GPCLK_6(6);
 
     private final Integer value;
 }

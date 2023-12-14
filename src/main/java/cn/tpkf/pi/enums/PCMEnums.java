@@ -1,10 +1,10 @@
-package cn.tpkf.pi.exception.enums;
+package cn.tpkf.pi.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * General Purpose CLock
+ * PCM (Pulse-code Modulation)
  *
  * @author Harlan
  * @email isharlan.hu@gmali.com
@@ -12,13 +12,15 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum GPCLKEnums implements IBCMEnums {
+public enum PCMEnums implements IBCMEnums {
 
-    GPCLK_4(4),
+    FS(19),
 
-    GPCLK_5(5),
+    CLK(18),
 
-    GPCLK_6(6);
+    DIN(20),
+
+    DOUT(21);
 
     private final Integer value;
 }

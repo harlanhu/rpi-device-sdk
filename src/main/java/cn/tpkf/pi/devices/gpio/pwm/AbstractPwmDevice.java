@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices.gpio.pwm;
 
 import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
-import cn.tpkf.pi.exception.enums.IBCMEnums;
+import cn.tpkf.pi.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.pwm.*;
 import com.pi4j.plugin.pigpio.provider.pwm.PiGpioPwmProvider;

@@ -1,4 +1,4 @@
-package cn.tpkf.pi.exception.enums;
+package cn.tpkf.pi.enums;
 
 /**
  * @author Harlan

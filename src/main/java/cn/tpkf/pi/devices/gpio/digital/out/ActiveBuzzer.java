@@ -1,6 +1,6 @@
 package cn.tpkf.pi.devices.gpio.digital.out;
 
-import cn.tpkf.pi.exception.enums.IBCMEnums;
+import cn.tpkf.pi.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalState;
 
