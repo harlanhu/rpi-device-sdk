@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices.gpio.digital;
 
 import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
-import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.exception.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalState;
 import lombok.Getter;
@@ -22,9 +22,9 @@ public abstract class AbstractDigitalDevice extends AbstractGpioDevice {
      * @param deviceManager The DeviceManager instance.
      * @param id            The ID of the device.
      * @param name          The name of the device.
-     * @param address       The BCMEnums address of the device.
+     * @param address       The IBCMEnums address of the device.
      */
-    protected AbstractDigitalDevice(DeviceManager deviceManager, String id, String name, BCMEnums address) {
+    protected AbstractDigitalDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address) {
         super(deviceManager, id, name, address);
     }
 

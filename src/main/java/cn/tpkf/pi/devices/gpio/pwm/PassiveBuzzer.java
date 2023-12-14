@@ -1,6 +1,6 @@
 package cn.tpkf.pi.devices.gpio.pwm;
 
-import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.exception.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.pwm.PwmPolarity;
 import com.pi4j.io.pwm.PwmType;
@@ -14,7 +14,7 @@ import com.pi4j.io.pwm.PwmType;
  */
 public class PassiveBuzzer extends AbstractPwmDevice {
 
-    public PassiveBuzzer(DeviceManager deviceManager, String id, String name, BCMEnums address, PwmType pwmType, Number initial, Number shutdown, Number dutyCycle, Integer frequency, PwmPolarity polarity) {
+    public PassiveBuzzer(DeviceManager deviceManager, String id, String name, IBCMEnums address, PwmType pwmType, Number initial, Number shutdown, Number dutyCycle, Integer frequency, PwmPolarity polarity) {
         super(deviceManager, id, name, address, pwmType, initial, shutdown, dutyCycle, frequency, polarity);
     }
 }

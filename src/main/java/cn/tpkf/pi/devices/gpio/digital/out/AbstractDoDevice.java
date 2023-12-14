@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices.gpio.digital.out;
 
 import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
-import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.exception.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
@@ -50,13 +50,13 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
      * @param initial The initial state of the device.
      * @param shutdown The shutdown state of the device.
      */
-    public AbstractDoDevice(DeviceManager deviceManager, String id, String name, BCMEnums address, DigitalState initial, DigitalState shutdown) {
+    public AbstractDoDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, DigitalState initial, DigitalState shutdown) {
         super(deviceManager, id, name, address);
         digitalOutput = deviceManager.execute(c -> {
             DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(c)
                     .id(id)
                     .name(name)
-                    .address(address.getVale())
+                    .address(address.getValue())
                     .initial(initial)
                     .shutdown(shutdown)
                     .description(getDescription())

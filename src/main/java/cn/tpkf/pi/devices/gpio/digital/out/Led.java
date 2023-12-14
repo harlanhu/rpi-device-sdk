@@ -1,6 +1,6 @@
 package cn.tpkf.pi.devices.gpio.digital.out;
 
-import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.exception.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalState;
 
@@ -13,7 +13,7 @@ import com.pi4j.io.gpio.digital.DigitalState;
  */
 public class Led extends AbstractDoDevice {
 
-    public Led(DeviceManager deviceManager, String id, String name, BCMEnums address) {
+    public Led(DeviceManager deviceManager, String id, String name, IBCMEnums address) {
         super(deviceManager, id, name, address, DigitalState.LOW, DigitalState.LOW);
     }
 }

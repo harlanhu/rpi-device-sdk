@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices.gpio.digital.in;
 
 import cn.tpkf.pi.devices.gpio.digital.AbstractDigitalDevice;
-import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.exception.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.*;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
@@ -49,14 +49,14 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
      * @param deviceManager The DeviceManager instance.
      * @param id The ID of the device.
      * @param name The name of the device.
-     * @param address The BCMEnums address of the device.
+     * @param address The IBCMEnums address of the device.
      * @param inverted Indicates whether the input signal is inverted.
      * @param debounceMicSec The debounce time in microseconds.
      * @param onUpTask The task to be executed when the input signal goes from low to high.
      * @param onDownTask The task to be executed when the input signal goes from high to low.
      */
     protected AbstractDIDevice(DeviceManager deviceManager, String id, String name,
-                               BCMEnums address, boolean inverted, long debounceMicSec,
+                               IBCMEnums address, boolean inverted, long debounceMicSec,
                                Runnable onUpTask, Runnable onDownTask) {
         super(deviceManager, id, name, address);
         this.pull = inverted ? PullResistance.PULL_UP : PullResistance.PULL_DOWN;
@@ -67,7 +67,7 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
             DigitalInputConfig config = DigitalInputConfigBuilder.newInstance(c)
                     .id(id)
                     .name(name)
-                    .address(address.getVale())
+                    .address(address.getValue())
                     .description(getDescription())
                     .pull(pull)
                     .debounce(debounceMicSec)

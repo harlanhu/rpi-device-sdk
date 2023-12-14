@@ -1,7 +1,7 @@
 package cn.tpkf.pi.devices.gpio.pwm;
 
 import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
-import cn.tpkf.pi.enums.BCMEnums;
+import cn.tpkf.pi.exception.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.pwm.*;
 import com.pi4j.plugin.pigpio.provider.pwm.PiGpioPwmProvider;
@@ -63,7 +63,7 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
      * @param deviceManager The DeviceManager instance.
      * @param id The ID of the device.
      * @param name The name of the device.
-     * @param address The BCMEnums address of the device.
+     * @param address The IBCMEnums address of the device.
      * @param pwmType The PWM type.
      * @param initial The initial state.
      * @param shutdown The shutdown state.
@@ -72,7 +72,7 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
      * @param polarity The polarity.
      */
     protected AbstractPwmDevice(DeviceManager deviceManager, String id, String name,
-                                BCMEnums address, PwmType pwmType, Number initial, Number shutdown,
+                                IBCMEnums address, PwmType pwmType, Number initial, Number shutdown,
                                 Number dutyCycle, Integer frequency, PwmPolarity polarity) {
         super(deviceManager, id, name, address);
         this.initial = initial;
@@ -85,7 +85,7 @@ public abstract class AbstractPwmDevice extends AbstractGpioDevice {
             PwmConfig config = PwmConfigBuilder.newInstance(c)
                     .id(id)
                     .name(name)
-                    .address(address.getVale())
+                    .address(address.getValue())
                     .initial(initial)
                     .pwmType(pwmType)
                     .description(getDescription())
