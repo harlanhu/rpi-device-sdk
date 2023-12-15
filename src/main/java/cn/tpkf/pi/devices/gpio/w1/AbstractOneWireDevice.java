@@ -4,6 +4,7 @@ import cn.tpkf.pi.devices.gpio.AbstractGpioDevice;
 import cn.tpkf.pi.enums.IBCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.*;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  *
+ * @author Harlan
  */
 public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
 
@@ -75,7 +77,7 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
             offState = DigitalState.HIGH;
         }
         digitalOutputConfig = deviceManager.execute(c -> DigitalOutputConfigBuilder.newInstance(c)
-                .id(id)
+                .id(id + "-OUT")
                 .name(name)
                 .address(address.getValue())
                 .initial(initial)
@@ -84,13 +86,14 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
                 .provider(PiGpioDigitalOutputProvider.class)
                 .build());
         digitalInputConfig = deviceManager.execute(c -> DigitalInputConfigBuilder.newInstance(c)
-                .id(id)
+                .id(id + "-IN")
                 .name(name)
                 .address(address.getValue())
-                .provider(PiGpioDigitalOutputProvider.class)
+                .provider(PiGpioDigitalInputProvider.class)
                 .build());
         if (WireState.OUT == state) {
             digitalOutput = deviceManager.execute(c -> c.create(digitalOutputConfig));
+            digitalOutput.off();
         } else {
             digitalInput = deviceManager.execute(c -> c.create(digitalInputConfig));
         }
@@ -104,6 +107,7 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
             }
             digitalOutput = deviceManager.execute(c -> {
                 digitalInput.shutdown(c);
+                c.shutdown(digitalOutput.getId());
                 return c.create(digitalOutputConfig);
             });
             state = WireState.OUT;
@@ -121,6 +125,7 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
             }
             digitalInput = deviceManager.execute(c -> {
                 digitalOutput.shutdown(c);
+                c.shutdown(digitalOutput.getId());
                 return c.create(digitalInputConfig);
             });
             state = WireState.IN;
@@ -195,12 +200,34 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
         return DigitalState.LOW.equals(getInState());
     }
 
+
+    /**
+     * Represents the input wire state.
+     *
+     * <p>
+     * The IN variable is an enumeration constant of the WireState enum class. It is used to
+     * represent the input wire state value of 1.
+     * </p>
+     *
+     * <p>
+     * Usage example:
+     * </p>
+     * <pre>{@code
+     * WireState state = WireState.IN;
+     * }</pre>
+     */
     @Getter
     @AllArgsConstructor
     public enum WireState {
 
+        /**
+         * Represents the output wire state.
+         */
         OUT(0),
 
+        /**
+         * Represents the input wire state.
+         */
         IN(1);
 
         private final Integer value;
