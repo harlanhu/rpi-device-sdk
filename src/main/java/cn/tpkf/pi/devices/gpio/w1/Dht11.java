@@ -59,12 +59,12 @@ public class Dht11 extends AbstractOneWireDevice {
             // 发送开始信号
             digitalOutput.on();
             TimeUnit.MILLISECONDS.sleep(SEND_SIGNAL_TIME);
-            digitalOutput.off();
             long waitStartTime = System.nanoTime();
+            digitalOutput.off();
             // 等待低电平
-            awaitSignal(waitStartTime, DigitalState.LOW);
-            // 等待高电平
             awaitSignal(waitStartTime, DigitalState.HIGH);
+            // 等待高电平
+            awaitSignal(waitStartTime, DigitalState.LOW);
             // 开始读取数据
             while (dataIndex < DATA_LENGTH) {
                 awaitSignal(waitStartTime, DigitalState.LOW);
@@ -72,7 +72,7 @@ public class Dht11 extends AbstractOneWireDevice {
                 long validTime = READ_TIME_OUT_NANOS + nanoTimer;
                 while (digitalInput.state() == DigitalState.HIGH) {
                     if ((eachReadEndTime = System.nanoTime()) > validTime) {
-                        throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex + 1);
+                        throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex);
                     }
                 }
                 log.info("dataIndex: {}", dataIndex);

@@ -26,6 +26,5 @@ class Dht11Test {
         dht11.detection();
         assertNotEquals(0.0, dht11.getHumidity());
         assertNotEquals(0.0, dht11.getTemperature());
-        log.info("温度：{}，湿度：{}", dht11.getTemperature(), dht11.getHumidity());
     }
 }
