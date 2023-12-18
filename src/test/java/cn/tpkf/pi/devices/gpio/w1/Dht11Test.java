@@ -1,5 +1,6 @@
 package cn.tpkf.pi.devices.gpio.w1;
 
+import cn.tpkf.pi.devices.gpio.w1.dht.Dht11;
 import cn.tpkf.pi.enums.BCMEnums;
 import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.Pi4J;
@@ -23,7 +24,7 @@ class Dht11Test {
     void detection() {
         DeviceManager deviceManager = new DeviceManager(context);
         Dht11 dht11 = new Dht11(deviceManager, "dht11", "温湿度传感器", BCMEnums.BCM_4);
-        dht11.detection();
+        assertNotNull(dht11.detection());
         assertNotEquals(0.0, dht11.getHumidity());
         assertNotEquals(0.0, dht11.getTemperature());
     }
