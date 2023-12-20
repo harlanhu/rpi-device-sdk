@@ -62,12 +62,13 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
 
     private LocalDateTime lastDetectionTime;
 
+    private volatile boolean keepHighSignal = true;
+
     protected AbstractDhtDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, Integer detectionInterval,Long waitSignalTimeOutMicros, Long readDataTimeOutMicros) {
-        super(deviceManager, id, name, address, DigitalState.HIGH, DigitalState.HIGH, PullResistance.OFF, WireState.OUT);
+        super(deviceManager, id, name, address, DigitalState.HIGH, DigitalState.HIGH, PullResistance.OFF);
         waitSignalTimeOutNanos = waitSignalTimeOutMicros * 1000;
         readDataTimeOutNanos = readDataTimeOutMicros * 1000;
         this.detectionInterval = detectionInterval;
-        detection();
     }
 
     @SneakyThrows
@@ -77,12 +78,17 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
             if (Objects.nonNull(lastDetectionTime) && lastDetectionTime.plusSeconds(detectionInterval).isAfter(LocalDateTime.now())) {
                 return new HumitureInfo(temperature, humidity);
             }
+            if (Objects.isNull(lastDetectionTime)) {
+                TimeUnit.SECONDS.sleep(2);
+            }
             // 发送开始信号
             digitalOutput.on();
             new Thread(readDataTask).start();
             TimeUnit.MILLISECONDS.sleep(SEND_DATA_TIME_MILLIS);
+            while (keepHighSignal) {
+                Thread.onSpinWait();
+            }
             digitalOutput.off();
-            log.info(String.valueOf(digitalInput.state()));
             // 读取数据
             long[] data = readDataTask.get();
             // 处理数据
@@ -98,31 +104,37 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
     }
 
     private long[] readData() {
-        long[] data = new long[40];
-        int dataIndex = 0;
-        long eachReadEndTime = 0;
-        long nanoTimer;
-        // 等待主机电平拉高
-        awaitSignal(SEND_DATA_TIME_MILLIS * 1000000, DigitalState.LOW);
-        // 等待低电平
-        awaitSignal(waitSignalTimeOutNanos, DigitalState.HIGH);
-        // 等待高电平
-        awaitSignal(waitSignalTimeOutNanos, DigitalState.LOW);
-        // 开始读取数据
-        while (dataIndex < DATA_LENGTH) {
+        try {
+            long[] data = new long[40];
+            int dataIndex = 0;
+            long eachReadEndTime = 0;
+            long nanoTimer;
+            // 等待主机电平拉高
+            keepHighSignal = false;
+            awaitSignal(SEND_DATA_TIME_MILLIS * 2000000, DigitalState.LOW);
+            // 等待低电平
+            awaitSignal(waitSignalTimeOutNanos , DigitalState.HIGH);
+            // 等待高电平
             awaitSignal(waitSignalTimeOutNanos, DigitalState.LOW);
-            nanoTimer = System.nanoTime();
-            long validTime = readDataTimeOutNanos + nanoTimer;
-            while (digitalInput.state() == DigitalState.HIGH) {
-                if ((eachReadEndTime = System.nanoTime()) > validTime) {
-                    throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex);
+            // 等待低电平
+            awaitSignal(waitSignalTimeOutNanos, DigitalState.HIGH);
+            // 开始读取数据
+            while (dataIndex < DATA_LENGTH) {
+                awaitSignal(waitSignalTimeOutNanos, DigitalState.LOW);
+                nanoTimer = System.nanoTime();
+                long validTime = readDataTimeOutNanos + nanoTimer;
+                while (digitalInput.state() == DigitalState.HIGH) {
+                    if ((eachReadEndTime = System.nanoTime()) > validTime) {
+                        throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex);
+                    }
                 }
+                data[dataIndex] = (eachReadEndTime - nanoTimer);
+                dataIndex ++;
             }
-            log.info("dataIndex: {}", dataIndex);
-            data[dataIndex] = (eachReadEndTime - nanoTimer);
-            dataIndex ++;
+            return data;
+        } finally {
+            keepHighSignal = true;
         }
-        return data;
     }
 
     protected abstract HumitureInfo processData(long[] data);
@@ -131,7 +143,7 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
         long endTime = System.nanoTime() + timeOutNanos;
         while (digitalInput.state() == digitalState) {
             if (System.nanoTime() > endTime) {
-                throw new DeviceException("Wait " + digitalState.name() + " signal time out: " + (System.nanoTime() - endTime));
+                throw new DeviceException("Keep " + digitalState.name() + " signal time out: " + (System.nanoTime() - endTime));
             }
         }
     }

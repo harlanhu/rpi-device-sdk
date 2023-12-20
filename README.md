@@ -7,6 +7,7 @@
 - [x] Button
 - [x] LED Light
 - [x] PCF8591
+- [x] DHT11
 
 The equipment list will be updated continuously.
 ## how to use

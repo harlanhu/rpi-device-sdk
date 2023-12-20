@@ -20,9 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
 
-    @Getter
-    protected WireState state;
-
     /**
      * The on state.
      */
@@ -53,9 +50,8 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
      * @param shutdown      The shutdown state of the digital output pin.
      */
     protected AbstractOneWireDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address,
-                                    DigitalState initial, DigitalState shutdown, PullResistance pull, WireState initState) {
+                                    DigitalState initial, DigitalState shutdown, PullResistance pull) {
         super(deviceManager, id, name, address);
-        state = initState;
         if (DigitalState.LOW.equals(shutdown)) {
             onState = DigitalState.HIGH;
             offState = DigitalState.LOW;
@@ -85,9 +81,7 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
                     .build();
             return c.create(config);
         });
-        if (WireState.OUT == state) {
-            digitalOutput.off();
-        }
+        digitalOutput.off();
     }
 
     protected boolean isHigh() {
