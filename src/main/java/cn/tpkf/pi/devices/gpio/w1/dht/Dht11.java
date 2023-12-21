@@ -53,15 +53,4 @@ public class Dht11 extends AbstractDhtDevice {
         }
         return new HumitureInfo(Double.valueOf(temperatureInteger + "." + temperatureDecimal), Double.valueOf(humidityInteger + "." + humidityDecimal));
     }
-
-    /**
-     * Converts a given number to a binary system based on the provided index.
-     *
-     * @param num The number to be converted.
-     * @param index The index indicating the position in the binary system.
-     * @return The converted number in the binary system.
-     */
-    private int sysConvert(long num, int index) {
-        return (int) (num * Math.pow(2, 7d - index));
-    }
 }

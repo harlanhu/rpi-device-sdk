@@ -48,6 +48,10 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      */
     private final Long readDataTimeOutNanos;
 
+    /**
+     * The time duration, in milliseconds, after which the data should be sent.
+     * This variable is used to specify how long to wait sending data.
+     */
     private static final Long SEND_DATA_TIME_MILLIS = 20L;
 
     @Getter
@@ -56,12 +60,24 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
     @Getter
     private Double humidity;
 
+    /**
+     * A FutureTask for reading data from a source.
+     */
     FutureTask<long[]> readDataTask = new FutureTask<>(this::readData);
 
+    /**
+     * The interval, in seconds, between two consecutive detections.
+     */
     private final Integer detectionInterval;
 
+    /**
+     * The time of the last detection.
+     */
     private LocalDateTime lastDetectionTime;
 
+    /**
+     * Indicates whether to keep the signal high.
+     */
     private volatile boolean keepHighSignal = true;
 
     protected AbstractDhtDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, Integer detectionInterval,Long waitSignalTimeOutMicros, Long readDataTimeOutMicros) {
@@ -71,6 +87,11 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
         this.detectionInterval = detectionInterval;
     }
 
+    /**
+     * Performs a detection of temperature and humidity using a sensor.
+     *
+     * @return The updated temperature and humidity information.
+     */
     @SneakyThrows
     public HumitureInfo detection() {
         try {
@@ -103,6 +124,12 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
         }
     }
 
+    /**
+     * Reads data from a device and returns an array of long values.
+     *
+     * @return an array of long values representing the read data
+     * @throws DeviceException if there is a timeout while reading the data
+     */
     private long[] readData() {
         try {
             long[] data = new long[40];
@@ -111,16 +138,16 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
             long nanoTimer;
             // 等待主机电平拉高
             keepHighSignal = false;
-            awaitSignal(SEND_DATA_TIME_MILLIS * 2000000, DigitalState.LOW);
+            awaitSignalOff(SEND_DATA_TIME_MILLIS * 2000000, DigitalState.LOW);
             // 等待低电平
-            awaitSignal(waitSignalTimeOutNanos , DigitalState.HIGH);
+            awaitSignalOff(waitSignalTimeOutNanos , DigitalState.HIGH);
             // 等待高电平
-            awaitSignal(waitSignalTimeOutNanos, DigitalState.LOW);
+            awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
             // 等待低电平
-            awaitSignal(waitSignalTimeOutNanos, DigitalState.HIGH);
+            awaitSignalOff(waitSignalTimeOutNanos, DigitalState.HIGH);
             // 开始读取数据
             while (dataIndex < DATA_LENGTH) {
-                awaitSignal(waitSignalTimeOutNanos, DigitalState.LOW);
+                awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
                 nanoTimer = System.nanoTime();
                 long validTime = readDataTimeOutNanos + nanoTimer;
                 while (digitalInput.state() == DigitalState.HIGH) {
@@ -137,15 +164,39 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
         }
     }
 
+    /**
+     * Processes the given data and returns a HumitureInfo object.
+     *
+     * @param data An array of long values representing the data to be processed.
+     * @return A HumitureInfo object containing the processed data.
+     */
     protected abstract HumitureInfo processData(long[] data);
 
-    private void awaitSignal(long timeOutNanos, DigitalState digitalState) {
+    /**
+     * Waits for the specified amount of time for the given digital state to be off.
+     *
+     * @param timeOutNanos the timeout period in nanoseconds
+     * @param digitalState the desired digital state to wait for
+     * @throws DeviceException if the digital state is not off within the timeout period
+     */
+    private void awaitSignalOff(long timeOutNanos, DigitalState digitalState) {
         long endTime = System.nanoTime() + timeOutNanos;
         while (digitalInput.state() == digitalState) {
             if (System.nanoTime() > endTime) {
                 throw new DeviceException("Keep " + digitalState.name() + " signal time out: " + (System.nanoTime() - endTime));
             }
         }
+    }
+
+    /**
+     * Converts a given number to a binary system based on the provided index.
+     *
+     * @param num The number to be converted.
+     * @param index The index indicating the position in the binary system.
+     * @return The converted number in the binary system.
+     */
+    protected int sysConvert(long num, int index) {
+        return (int) (num * Math.pow(2, 7d - index));
     }
 
     @Data
