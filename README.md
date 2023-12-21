@@ -19,9 +19,9 @@ The equipment list will be updated continuously.
 * Add dependency to pom.xml
 ```xml
 <dependency>
-    <groupId>com.github.harlanhu</groupId>
+    <groupId>cn.tpkf.rpi</groupId>
     <artifactId>rpi-device-sdk</artifactId>
-    <version>${last.version}</version>
+    <version>0.0.1</version>
 </dependency>
 ```
 * A simple example
