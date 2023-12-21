@@ -4,11 +4,35 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cn.tpkf.pi</groupId>
-    <artifactId>pi-device-sdk</artifactId>
+    <groupId>cn.tpkf.rpi</groupId>
+    <artifactId>rpi-device-sdk</artifactId>
     <version>0.0.1</version>
-
+    <name>rpi-device-sdk</name>
+    <url>https://github.com/harlanhu/rpi-device-sdk</url>
+    <description>Java sdk for raspberry pi devices</description>
     <packaging>jar</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache License | Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>Apache License</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/harlanhu/rpi-device-sdk</url>
+        <connection>https://github.com/harlanhu/rpi-device-sdk.git</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>HarlanHu</name>
+            <email>isharlan.hu@gmail.com</email>
+            <organization>https://github.com/tang-pingg</organization>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>19</java.version>
@@ -28,6 +52,11 @@
         <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
         <sonar.organization>tangping</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <server.id>ossrh</server.id>
+        <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
+        <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
+        <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
     </properties>
 
     <dependencies>
@@ -136,6 +165,85 @@
             <url>https://oss.sonatype.org/content/groups/public</url>
         </repository>
     </repositories>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>${server.id}</id>
+                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>${server.id}</id>
+                    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${nexus.staging.maven.plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>${server.id}</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven.source.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven.javadoc.plugin.version}</version>
+                        <configuration>
+                            <additionalJOptions>
+                                <additionalJOption>-Xdoclint:none</additionalJOption>
+                            </additionalJOptions>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven.gpg.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>pi-device-sdk</finalName>
