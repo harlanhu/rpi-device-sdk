@@ -12,6 +12,7 @@ import java.util.Arrays;
  * @date 2023/12/18
  */
 public class Dht22 extends AbstractDhtDevice {
+
     protected Dht22(DeviceManager deviceManager, String id, String name, IBCMEnums address) {
         super(deviceManager, id, name, address, 1, 80L, 130L);
     }

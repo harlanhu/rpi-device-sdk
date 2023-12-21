@@ -6,7 +6,6 @@ import cn.tpkf.pi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.*;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,6 +81,7 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
             return c.create(config);
         });
         digitalOutput.off();
+        deviceManager.addDevice(this);
     }
 
     protected boolean isHigh() {
@@ -92,37 +92,13 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
         return digitalInput.isLow();
     }
 
-
-    /**
-     * Represents the input wire state.
-     *
-     * <p>
-     * The IN variable is an enumeration constant of the WireState enum class. It is used to
-     * represent the input wire state value of 1.
-     * </p>
-     *
-     * <p>
-     * Usage example:
-     * </p>
-     * <pre>{@code
-     * WireState state = WireState.IN;
-     * }</pre>
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum WireState {
-
-        /**
-         * Represents the output wire state.
-         */
-        OUT(0),
-
-        /**
-         * Represents the input wire state.
-         */
-        IN(1);
-
-        private final Integer value;
-
+    @Override
+    public void shutdown() {
+        deviceManager.execute(context -> {
+            digitalOutput.shutdown(context);
+            digitalInput.shutdown(context);
+            return null;
+        });
+        deviceManager.removeDevice(id);
     }
 }
