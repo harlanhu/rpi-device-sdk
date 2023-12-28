@@ -9,13 +9,11 @@ import com.pi4j.io.gpio.digital.PullResistance;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,11 +62,6 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
     private Double humidity;
 
     /**
-     * A FutureTask for reading data from a source.
-     */
-    FutureTask<long[]> readDataTask = new FutureTask<>(this::readData);
-
-    /**
      * The interval, in seconds, between two consecutive detections.
      */
     private final Integer detectionInterval;
@@ -77,11 +70,6 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      * The time of the last detection.
      */
     private LocalDateTime lastDetectionTime;
-
-    /**
-     * Indicates whether to keep the signal high.
-     */
-    private volatile boolean keepHighSignal = true;
 
     protected AbstractDhtDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, Integer detectionInterval, Long waitSignalTimeOutMicros, Long readDataTimeOutMicros) {
         super(deviceManager, id, name, address, DigitalState.HIGH, DigitalState.HIGH, PullResistance.OFF);
@@ -95,7 +83,6 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      *
      * @return The updated temperature and humidity information.
      */
-    @SneakyThrows
     public HumitureInfo detect() {
         try {
             lock.lock();
@@ -104,20 +91,19 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
             }
             // 发送开始信号
             digitalOutput.on();
-            readDataTask.run();
             TimeUnit.MILLISECONDS.sleep(SEND_DATA_TIME_MILLIS);
-            while (keepHighSignal) {
-                Thread.onSpinWait();
-            }
             digitalOutput.off();
             // Read the data
-            long[] data = readDataTask.get();
+            long[] data = readData();
             // Processing of data
             HumitureInfo humitureInfo = processData(data);
             temperature = humitureInfo.getTemperature();
             humidity = humitureInfo.getHumidity();
             lastDetectionTime = LocalDateTime.now();
             return humitureInfo;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DeviceException("DHT detect interrupted", e);
         } finally {
             lock.unlock();
             digitalOutput.off();
@@ -131,40 +117,34 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      * @throws DeviceException if there is a timeout while reading the data
      */
     private long[] readData() {
-        try {
-            long[] data = new long[40];
-            int dataIndex = 0;
-            long eachReadEndTime = 0;
-            long nanoTimer;
-            // Wait for the host level to pull up
-            keepHighSignal = false;
-            awaitSignalOff(SEND_DATA_TIME_MILLIS * 2000000, DigitalState.LOW);
-            // Wait for the DHT to pull the level low
-            awaitSignalOff(waitSignalTimeOutNanos , DigitalState.HIGH);
-            // Wait for the DHT to pull the level high
+        long[] data = new long[40];
+        int dataIndex = 0;
+        long eachReadEndTime = 0;
+        long nanoTimer;
+        awaitSignalOff(SEND_DATA_TIME_MILLIS * 2000000, DigitalState.LOW);
+        // Wait for the DHT to pull the level low
+        awaitSignalOff(waitSignalTimeOutNanos, DigitalState.HIGH);
+        // Wait for the DHT to pull the level high
+        awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
+        // Wait for the DHT to pull the level low
+        awaitSignalOff(waitSignalTimeOutNanos, DigitalState.HIGH);
+        // Start reading the data
+        while (dataIndex < DATA_LENGTH) {
+            // 50us low level start signal
             awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
-            // Wait for the DHT to pull the level low
-            awaitSignalOff(waitSignalTimeOutNanos, DigitalState.HIGH);
-            // Start reading the data
-            while (dataIndex < DATA_LENGTH) {
-                // 50us low level start signal
-                awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
-                // The high level starts to read the data
-                nanoTimer = System.nanoTime();
-                long validTime = readDataTimeOutNanos + nanoTimer;
-                while (digitalInput.state() == DigitalState.HIGH) {
-                    if ((eachReadEndTime = System.nanoTime()) > validTime) {
-                        throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex);
-                    }
+            // The high level starts to read the data
+            nanoTimer = System.nanoTime();
+            long validTime = readDataTimeOutNanos + nanoTimer;
+            while (digitalInput.state() == DigitalState.HIGH) {
+                if ((eachReadEndTime = System.nanoTime()) > validTime) {
+                    throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex);
                 }
-                // Save high time
-                data[dataIndex] = (eachReadEndTime - nanoTimer);
-                dataIndex ++;
             }
-            return data;
-        } finally {
-            keepHighSignal = true;
+            // Save high time
+            data[dataIndex] = (eachReadEndTime - nanoTimer);
+            dataIndex++;
         }
+        return data;
     }
 
     /**

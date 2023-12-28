@@ -19,6 +19,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class HCSr04 extends AbstractDevice {
 
+    private static final long DEFAULT_ECHO_TIMEOUT_NANOS = TimeUnit.MILLISECONDS.toNanos(100);
+
+    private static final double SPEED_OF_SOUND_METERS_PER_SECOND = 343.0;
+
     private final DigitalOutput trigger;
 
     private final DigitalInput echo;
@@ -27,10 +31,18 @@ public class HCSr04 extends AbstractDevice {
 
     private final BCMEnums echoAddress;
 
+    private final long echoTimeoutNanos;
+
     public HCSr04(DeviceManager deviceManager, String id, String name, BCMEnums triggerAddress, BCMEnums echoAddress) {
+        this(deviceManager, id, name, triggerAddress, echoAddress, DEFAULT_ECHO_TIMEOUT_NANOS);
+    }
+
+    public HCSr04(DeviceManager deviceManager, String id, String name, BCMEnums triggerAddress, BCMEnums echoAddress,
+                  long echoTimeoutNanos) {
         super(deviceManager, id, name);
         this.triggerAddress = triggerAddress;
         this.echoAddress = echoAddress;
+        this.echoTimeoutNanos = echoTimeoutNanos;
         trigger = deviceManager.execute(context -> {
             DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(context)
                     .id(id + "TRIGGER")
@@ -53,6 +65,7 @@ public class HCSr04 extends AbstractDevice {
                     .build();
             return context.create(config);
         });
+        deviceManager.addDevice(this);
     }
 
     /**
@@ -65,22 +78,28 @@ public class HCSr04 extends AbstractDevice {
         try {
             lock.lock();
             trigger.on();
-            TimeUnit.NANOSECONDS.sleep(10);
+            TimeUnit.MICROSECONDS.sleep(10);
             trigger.off();
-            while (echo.isLow()) {
-                Thread.onSpinWait();
-            }
+            waitForEchoState(DigitalState.HIGH);
             long startNanoTime = System.nanoTime();
-            while (echo.isHigh()) {
-                Thread.onSpinWait();
-            }
+            waitForEchoState(DigitalState.LOW);
             long endNanoTime = System.nanoTime();
-            return (endNanoTime - startNanoTime) / 1000000000.0 * 343 / 2;
+            return (endNanoTime - startNanoTime) / 1000000000.0 * SPEED_OF_SOUND_METERS_PER_SECOND / 2;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new DeviceException("HCSr04 detect error", e);
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void waitForEchoState(DigitalState expectedState) {
+        long deadline = System.nanoTime() + echoTimeoutNanos;
+        while (!expectedState.equals(echo.state())) {
+            if (System.nanoTime() > deadline) {
+                throw new DeviceException("HCSr04 echo wait timeout, expected state: " + expectedState);
+            }
+            Thread.onSpinWait();
         }
     }
 

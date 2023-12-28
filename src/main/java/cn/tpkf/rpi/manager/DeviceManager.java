@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @AllArgsConstructor
-public class DeviceManager {
+public class DeviceManager implements AutoCloseable {
 
     /**
      * 上下文
@@ -111,10 +111,13 @@ public class DeviceManager {
      * @param device 设备
      */
     public void addDevice(Device device) {
-        if (StringUtils.isBlank(device.getId())) {
+        if (Objects.isNull(device) || StringUtils.isBlank(device.getId())) {
             throw new DeviceManagerException("Device id or name is blank");
         }
-        devices.put(device.getId(), device);
+        Device previous = devices.putIfAbsent(device.getId(), device);
+        if (Objects.nonNull(previous)) {
+            throw new DeviceManagerException("Duplicate device id: " + device.getId());
+        }
     }
 
     /**
@@ -144,10 +147,23 @@ public class DeviceManager {
      * @return 关闭状态，如果成功返回true，否则返回false
      */
     public boolean shutdown() {
+        devices.values().forEach(device -> {
+            try {
+                device.shutdown();
+            } catch (RuntimeException e) {
+                log.warn("Shutdown device failed, device id: {}", device.getId(), e);
+            }
+        });
+        devices.clear();
         if (isRunning()) {
             context.shutdown();
         }
         return true;
+    }
+
+    @Override
+    public void close() {
+        shutdown();
     }
 
     /**

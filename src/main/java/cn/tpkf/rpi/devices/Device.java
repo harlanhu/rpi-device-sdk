@@ -5,7 +5,7 @@ package cn.tpkf.rpi.devices;
  * @email isharlan.hu@gmali.com
  * @date 2023/11/22
  */
-public interface Device {
+public interface Device extends AutoCloseable {
 
     /**
      * 获取设备id
@@ -23,6 +23,11 @@ public interface Device {
      * 关闭设备
      */
     void shutdown();
+
+    @Override
+    default void close() {
+        shutdown();
+    }
 
     /**
      * 获取设备描述
