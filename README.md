@@ -10,8 +10,9 @@
 - [x] Button
 - [x] LED Light
 - [x] PCF8591
-- [x] DHT11
-- [x] DHT22
+- [x] HCSR04
+- [ ] DHT11
+- [ ] DHT22
 
 The equipment list will be updated continuously.
 ## How to use

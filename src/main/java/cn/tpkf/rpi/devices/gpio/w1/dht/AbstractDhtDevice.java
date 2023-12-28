@@ -19,7 +19,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
- * DHT系列
+ * DHT
+ * <p>
+ * Due to Java execution efficiency issues, I/O operations with pins of 100us or less cannot be guaranteed
+ * Therefore, it is not possible to use the current solution to read DHT data
  *
  * @author Harlan
  * @email isharlan.hu@gmali.com
@@ -52,7 +55,7 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      * The time duration, in milliseconds, after which the data should be sent.
      * This variable is used to specify how long to wait sending data.
      */
-    private static final Long SEND_DATA_TIME_MILLIS = 20L;
+    private static final Long SEND_DATA_TIME_MILLIS = 18L;
 
     @Getter
     private Double temperature;
@@ -80,7 +83,7 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      */
     private volatile boolean keepHighSignal = true;
 
-    protected AbstractDhtDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, Integer detectionInterval,Long waitSignalTimeOutMicros, Long readDataTimeOutMicros) {
+    protected AbstractDhtDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, Integer detectionInterval, Long waitSignalTimeOutMicros, Long readDataTimeOutMicros) {
         super(deviceManager, id, name, address, DigitalState.HIGH, DigitalState.HIGH, PullResistance.OFF);
         waitSignalTimeOutNanos = waitSignalTimeOutMicros * 1000;
         readDataTimeOutNanos = readDataTimeOutMicros * 1000;
@@ -93,26 +96,23 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      * @return The updated temperature and humidity information.
      */
     @SneakyThrows
-    public HumitureInfo detection() {
+    public HumitureInfo detect() {
         try {
             lock.lock();
             if (Objects.nonNull(lastDetectionTime) && lastDetectionTime.plusSeconds(detectionInterval).isAfter(LocalDateTime.now())) {
                 return new HumitureInfo(temperature, humidity);
             }
-            if (Objects.isNull(lastDetectionTime)) {
-                TimeUnit.SECONDS.sleep(2);
-            }
             // 发送开始信号
             digitalOutput.on();
-            new Thread(readDataTask).start();
+            readDataTask.run();
             TimeUnit.MILLISECONDS.sleep(SEND_DATA_TIME_MILLIS);
             while (keepHighSignal) {
                 Thread.onSpinWait();
             }
             digitalOutput.off();
-            // 读取数据
+            // Read the data
             long[] data = readDataTask.get();
-            // 处理数据
+            // Processing of data
             HumitureInfo humitureInfo = processData(data);
             temperature = humitureInfo.getTemperature();
             humidity = humitureInfo.getHumidity();
@@ -136,18 +136,20 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
             int dataIndex = 0;
             long eachReadEndTime = 0;
             long nanoTimer;
-            // 等待主机电平拉高
+            // Wait for the host level to pull up
             keepHighSignal = false;
             awaitSignalOff(SEND_DATA_TIME_MILLIS * 2000000, DigitalState.LOW);
-            // 等待低电平
+            // Wait for the DHT to pull the level low
             awaitSignalOff(waitSignalTimeOutNanos , DigitalState.HIGH);
-            // 等待高电平
+            // Wait for the DHT to pull the level high
             awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
-            // 等待低电平
+            // Wait for the DHT to pull the level low
             awaitSignalOff(waitSignalTimeOutNanos, DigitalState.HIGH);
-            // 开始读取数据
+            // Start reading the data
             while (dataIndex < DATA_LENGTH) {
+                // 50us low level start signal
                 awaitSignalOff(waitSignalTimeOutNanos, DigitalState.LOW);
+                // The high level starts to read the data
                 nanoTimer = System.nanoTime();
                 long validTime = readDataTimeOutNanos + nanoTimer;
                 while (digitalInput.state() == DigitalState.HIGH) {
@@ -155,6 +157,7 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
                         throw new DeviceException("Read data time out: " + (eachReadEndTime - nanoTimer) + " ns, data size: " + dataIndex);
                     }
                 }
+                // Save high time
                 data[dataIndex] = (eachReadEndTime - nanoTimer);
                 dataIndex ++;
             }
