@@ -53,6 +53,7 @@ public class HCSr04 extends AbstractDevice {
                     .build();
             return context.create(config);
         });
+        deviceManager.addDevice(this);
     }
 
     /**
