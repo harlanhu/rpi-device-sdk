@@ -40,24 +40,27 @@ The equipment list will be updated continuously.
 * A simple example
 ```java
 public static void main(String[] args) {
-    // Create Pi4J context
-    Context context = Pi4J.newAutoContext();
-    // Create a new Device Manager
-    DeviceManager deviceManager = new DeviceManager(context);
-    // Create a new device example LED and blink
-    Led led = new Led(deviceManager, "led-4", "LED", BCMEnums.BCM_4);
+    Led led = Rpi.led(BCMEnums.BCM_4);
     led.blink(1, 5, TimeUnit.SECONDS);
-    //shutdown led
-    led.shutdown();
-    //shutdown device manager
-    deviceManager.shutdown();
 }
 ```
+
+The `Rpi` facade lazily creates and reuses a shared `DeviceManager`, and registers a JVM shutdown hook to release devices.
+Use `DeviceManager.create()` when you want explicit lifecycle control:
+
+```java
+try (DeviceManager deviceManager = DeviceManager.create()) {
+    Led led = deviceManager.led(BCMEnums.BCM_4);
+    led.blink(1, 5, TimeUnit.SECONDS);
+}
+```
+
+Factory methods reuse registered devices with the same id and type. You can still create devices with their constructors when you need full control over id, name, and advanced options.
 
 ### More device examples
 ```java
 // Relay, active-high by default
-Relay relay = new Relay(deviceManager, "relay-17", "Relay", BCMEnums.BCM_17);
+Relay relay = deviceManager.relay(BCMEnums.BCM_17);
 relay.on();
 relay.off();
 
@@ -76,7 +79,7 @@ VibrationSensor vibration = new VibrationSensor(deviceManager, "vibration-13", "
 LineTrackingSensor line = new LineTrackingSensor(deviceManager, "line-19", "Line", BCMEnums.BCM_19);
 
 // SG90 servo
-SG90Servo servo = new SG90Servo(deviceManager, "servo-18", "Servo", BCMEnums.BCM_18);
+SG90Servo servo = deviceManager.servo(BCMEnums.BCM_18);
 servo.center();
 servo.setAngle(90);
 
@@ -93,11 +96,11 @@ stepper.clockwise(512, 2, TimeUnit.MILLISECONDS);
 stepper.release();
 
 // DS18B20 temperature sensor, requires Linux 1-Wire sysfs support
-DS18B20 ds18b20 = new DS18B20(deviceManager, "temp-1", "Temperature");
+DS18B20 ds18b20 = deviceManager.ds18b20();
 double temperature = ds18b20.readTemperatureCelsius();
 
 // LCD1602 with I2C backpack
-Lcd1602I2c lcd = new Lcd1602I2c(deviceManager, "lcd", "LCD1602", 1);
+Lcd1602I2c lcd = deviceManager.lcd1602(1);
 lcd.printLine(0, "Hello RPi");
 lcd.printLine(1, "Temp: " + temperature);
 ```

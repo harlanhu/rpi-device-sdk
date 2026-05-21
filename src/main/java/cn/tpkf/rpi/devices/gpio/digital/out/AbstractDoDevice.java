@@ -2,6 +2,7 @@ package cn.tpkf.rpi.devices.gpio.digital.out;
 
 import cn.tpkf.rpi.devices.gpio.digital.AbstractDigitalDevice;
 import cn.tpkf.rpi.enums.IBCMEnums;
+import cn.tpkf.rpi.exception.DeviceException;
 import cn.tpkf.rpi.manager.DeviceManager;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
@@ -9,8 +10,8 @@ import com.pi4j.io.gpio.digital.DigitalOutputConfigBuilder;
 import com.pi4j.io.gpio.digital.DigitalState;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * @email isharlan.hu@gmali.com
  * @date 2023/12/6
  */
-@Slf4j
 public class AbstractDoDevice extends AbstractDigitalDevice {
 
     /**
@@ -52,6 +52,8 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
      */
     public AbstractDoDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address, DigitalState initial, DigitalState shutdown) {
         super(deviceManager, id, name, address);
+        Objects.requireNonNull(initial, "initial state must not be null");
+        Objects.requireNonNull(shutdown, "shutdown state must not be null");
         digitalOutput = deviceManager.execute(c -> {
             DigitalOutputConfig config = DigitalOutputConfigBuilder.newInstance(c)
                     .id(id)
@@ -118,6 +120,11 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
      * @param digitalState 开启状态
      */
     public void pulse(int duration, TimeUnit timeUnit, DigitalState digitalState) {
+        if (duration < 0) {
+            throw new DeviceException("Pulse duration must be greater than or equal to 0");
+        }
+        Objects.requireNonNull(timeUnit, "timeUnit must not be null");
+        Objects.requireNonNull(digitalState, "digitalState must not be null");
         try {
             lock.lock();
             digitalOutput.pulse(duration, timeUnit, digitalState);
@@ -145,6 +152,14 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
      * @param digitalState 闪烁状态
      */
     public void blink(int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) {
+        if (duration < 0) {
+            throw new DeviceException("Blink duration must be greater than or equal to 0");
+        }
+        if (cycle < 0) {
+            throw new DeviceException("Blink cycle must be greater than or equal to 0");
+        }
+        Objects.requireNonNull(timeUnit, "timeUnit must not be null");
+        Objects.requireNonNull(digitalState, "digitalState must not be null");
         try {
             lock.lock();
             digitalOutput.blink(duration, cycle, timeUnit, digitalState);
@@ -175,6 +190,14 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
      * @param digitalState 闪烁状态
      */
     public void cycle(int times, long interval, int duration, int cycle, TimeUnit timeUnit, DigitalState digitalState) {
+        if (times < 0 || interval < 0) {
+            throw new DeviceException("Cycle times and interval must be greater than or equal to 0");
+        }
+        if (duration < 0 || cycle < 0) {
+            throw new DeviceException("Cycle duration and blink cycle must be greater than or equal to 0");
+        }
+        Objects.requireNonNull(timeUnit, "timeUnit must not be null");
+        Objects.requireNonNull(digitalState, "digitalState must not be null");
         try {
             lock.lock();
             while (times >= 1) {
@@ -183,8 +206,8 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
                 timeUnit.sleep(interval);
             }
         } catch (InterruptedException e) {
-            log.error("DigitalOutput device cycle error, thread has been interrupt: {}", e.getMessage());
             Thread.currentThread().interrupt();
+            throw new DeviceException("DigitalOutput cycle interrupted", e);
         } finally {
             lock.unlock();
         }

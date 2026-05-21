@@ -1,6 +1,7 @@
 package cn.tpkf.rpi.devices.i2c;
 
 import cn.tpkf.rpi.devices.AbstractDevice;
+import cn.tpkf.rpi.exception.DeviceException;
 import cn.tpkf.rpi.manager.DeviceManager;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
@@ -44,6 +45,12 @@ public abstract class AbstractI2cDevice extends AbstractDevice {
      */
     protected AbstractI2cDevice(DeviceManager deviceManager, String id, String name, Integer bus, Integer device) {
         super(deviceManager, id, name);
+        if (bus == null || bus < 0) {
+            throw new DeviceException("I2C bus must be greater than or equal to 0");
+        }
+        if (device == null || device < 0) {
+            throw new DeviceException("I2C device address must be greater than or equal to 0");
+        }
         this.bus = bus;
         this.device = device;
         i2C = deviceManager.execute(c -> {

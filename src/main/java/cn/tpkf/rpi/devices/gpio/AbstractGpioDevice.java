@@ -2,6 +2,7 @@ package cn.tpkf.rpi.devices.gpio;
 
 import cn.tpkf.rpi.devices.AbstractDevice;
 import cn.tpkf.rpi.enums.IBCMEnums;
+import cn.tpkf.rpi.exception.DeviceException;
 import cn.tpkf.rpi.manager.DeviceManager;
 import lombok.Getter;
 
@@ -30,6 +31,9 @@ public abstract class AbstractGpioDevice extends AbstractDevice {
      */
     protected AbstractGpioDevice(DeviceManager deviceManager, String id, String name, IBCMEnums address) {
         super(deviceManager, id, name);
+        if (address == null) {
+            throw new DeviceException("GPIO address must not be null");
+        }
         this.address = address;
     }
 
