@@ -8,13 +8,20 @@
 - [x] Active Buzzer
 - [x] Passive Buzzer
 - [x] Button
+- [x] Flame Sensor
+- [x] Sound Sensor
+- [x] Touch Sensor
+- [x] Vibration Sensor
+- [x] Line Tracking Sensor
 - [x] LED Light
 - [x] Relay
 - [x] HC-SR501 PIR Motion Sensor
 - [x] SG90 Servo
 - [x] L298N DC Motor Driver
+- [x] ULN2003 Stepper Motor Driver
 - [x] DS18B20
 - [x] PCF8591
+- [x] LCD1602 I2C
 - [x] HCSR04
 - [ ] DHT11
 - [ ] DHT22
@@ -61,6 +68,13 @@ HCSr501 pir = new HCSr501(deviceManager, "pir-27", "PIR", BCMEnums.BCM_27,
         () -> System.out.println("Motion cleared"));
 boolean motionDetected = pir.isMotionDetected();
 
+// Digital sensors
+FlameSensor flame = new FlameSensor(deviceManager, "flame-22", "Flame", BCMEnums.BCM_22, false);
+SoundSensor sound = new SoundSensor(deviceManager, "sound-5", "Sound", BCMEnums.BCM_5);
+TouchSensor touch = new TouchSensor(deviceManager, "touch-6", "Touch", BCMEnums.BCM_6);
+VibrationSensor vibration = new VibrationSensor(deviceManager, "vibration-13", "Vibration", BCMEnums.BCM_13);
+LineTrackingSensor line = new LineTrackingSensor(deviceManager, "line-19", "Line", BCMEnums.BCM_19);
+
 // SG90 servo
 SG90Servo servo = new SG90Servo(deviceManager, "servo-18", "Servo", BCMEnums.BCM_18);
 servo.center();
@@ -72,9 +86,20 @@ motor.setSpeed(60);
 motor.forward();
 motor.stop();
 
+// ULN2003 stepper motor
+ULN2003Stepper stepper = new ULN2003Stepper(deviceManager, "stepper", "Stepper",
+        BCMEnums.BCM_12, BCMEnums.BCM_16, BCMEnums.BCM_20, BCMEnums.BCM_21);
+stepper.clockwise(512, 2, TimeUnit.MILLISECONDS);
+stepper.release();
+
 // DS18B20 temperature sensor, requires Linux 1-Wire sysfs support
 DS18B20 ds18b20 = new DS18B20(deviceManager, "temp-1", "Temperature");
 double temperature = ds18b20.readTemperatureCelsius();
+
+// LCD1602 with I2C backpack
+Lcd1602I2c lcd = new Lcd1602I2c(deviceManager, "lcd", "LCD1602", 1);
+lcd.printLine(0, "Hello RPi");
+lcd.printLine(1, "Temp: " + temperature);
 ```
 ## Last
 Thank [PI4J](https://github.com/Pi4J) very much for providing such a good raspberry pi I/O library.
