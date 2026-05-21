@@ -1,8 +1,11 @@
 package cn.tpkf.rpi.devices;
 
+import cn.tpkf.rpi.exception.DeviceException;
 import cn.tpkf.rpi.manager.DeviceManager;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -42,15 +45,23 @@ public abstract class AbstractDevice implements Device {
      * @param name the name of the device
      */
     protected AbstractDevice(DeviceManager deviceManager, String id, String name) {
+        if (StringUtils.isBlank(id)) {
+            throw new DeviceException("Device id must not be blank");
+        }
+        if (StringUtils.isBlank(name)) {
+            throw new DeviceException("Device name must not be blank");
+        }
         this.id = id;
         this.name = name;
-        this.deviceManager = deviceManager;
+        this.deviceManager = Objects.requireNonNull(deviceManager, "deviceManager must not be null");
         this.lock = new ReentrantLock();
     }
 
     @Override
     public void shutdown() {
         deviceManager.removeDevice(id);
-        deviceManager.execute(context -> context.shutdown(id));
+        if (deviceManager.isRunning()) {
+            deviceManager.execute(context -> context.shutdown(id));
+        }
     }
 }

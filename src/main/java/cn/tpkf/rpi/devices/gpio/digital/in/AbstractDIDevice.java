@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractDIDevice extends AbstractDigitalDevice {
 
+    private static final Runnable NOOP = () -> { };
+
     /**
      * The DigitalInput instance.
      */
@@ -60,9 +62,9 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
                                Runnable onUpTask, Runnable onDownTask) {
         super(deviceManager, id, name, address);
         this.pull = inverted ? PullResistance.PULL_UP : PullResistance.PULL_DOWN;
-        this.debounceMicSec = debounceMicSec;
-        this.onUpTask = onUpTask;
-        this.onDownTask = onDownTask;
+        this.debounceMicSec = Math.max(0, debounceMicSec);
+        this.onUpTask = defaultTask(onUpTask);
+        this.onDownTask = defaultTask(onDownTask);
         digitalInput = deviceManager.execute(c -> {
             DigitalInputConfig config = DigitalInputConfigBuilder.newInstance(c)
                     .id(id)
@@ -70,7 +72,7 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
                     .address(address.getValue())
                     .description(getDescription())
                     .pull(pull)
-                    .debounce(debounceMicSec)
+                    .debounce(this.debounceMicSec)
                     .provider(PiGpioDigitalInputProvider.class)
                     .build();
             return c.create(config);
@@ -78,12 +80,16 @@ public abstract class AbstractDIDevice extends AbstractDigitalDevice {
         digitalInput.addListener(event -> {
             DigitalState state = getState();
             switch (state) {
-                case HIGH -> onUpTask.run();
-                case LOW -> onDownTask.run();
+                case HIGH -> this.onUpTask.run();
+                case LOW -> this.onDownTask.run();
                 case UNKNOWN -> log.warn("Unknown state for device: {}", getDescription());
             }
         });
         deviceManager.addDevice(this);
+    }
+
+    private static Runnable defaultTask(Runnable task) {
+        return task == null ? NOOP : task;
     }
 
     @Override
