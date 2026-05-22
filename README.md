@@ -69,6 +69,12 @@ HCSr501 pir = new HCSr501(deviceManager, "pir-27", "PIR", BCMEnums.BCM_27,
         false, 10_000L,
         () -> System.out.println("Motion detected"),
         () -> System.out.println("Motion cleared"));
+
+// Example: prefer using SLF4J for logging. See DemoApp in src/main/java/cn/tpkf/rpi/DemoApp.java for a CI-friendly example.
+// Replace System.out calls with a logger in your application, e.g.:
+// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(YourClass.class);
+// () -> log.info("Motion detected")
+// () -> log.info("Motion cleared")
 boolean motionDetected = pir.isMotionDetected();
 
 // Digital sensors

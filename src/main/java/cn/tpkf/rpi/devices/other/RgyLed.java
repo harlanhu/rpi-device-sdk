@@ -120,12 +120,16 @@ public class RgyLed extends AbstractDevice {
 
     @Override
     public void shutdown() {
-        deviceManager.execute(context -> {
-            redOutput.shutdown(context);
-            greenOutput.shutdown(context);
-            yellowOutput.shutdown(context);
-            return null;
-        });
+        try {
+            deviceManager.execute(context -> {
+                redOutput.shutdown(context);
+                greenOutput.shutdown(context);
+                yellowOutput.shutdown(context);
+                return null;
+            });
+        } catch (Exception e) {
+            // best-effort
+        }
         deviceManager.removeDevice(id);
     }
 

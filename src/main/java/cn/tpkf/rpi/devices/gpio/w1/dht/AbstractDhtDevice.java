@@ -85,13 +85,27 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
      */
     public HumitureInfo detect() {
         try {
+            // minimize time holding the lock: only guard state checks and critical pin operations
             lock.lock();
             if (Objects.nonNull(lastDetectionTime) && lastDetectionTime.plusSeconds(detectionInterval).isAfter(LocalDateTime.now())) {
                 return new HumitureInfo(temperature, humidity);
             }
-            // 发送开始信号
+            // send start signal
             digitalOutput.on();
+        } finally {
+            lock.unlock();
+        }
+
+        try {
+            // required hardware timing; do not hold SDK locks while sleeping
             TimeUnit.MILLISECONDS.sleep(SEND_DATA_TIME_MILLIS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DeviceException("DHT detect interrupted", e);
+        }
+
+        try {
+            lock.lock();
             digitalOutput.off();
             // Read the data
             long[] data = readData();
@@ -101,11 +115,10 @@ public abstract class AbstractDhtDevice extends AbstractOneWireDevice {
             humidity = humitureInfo.getHumidity();
             lastDetectionTime = LocalDateTime.now();
             return humitureInfo;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DeviceException("DHT detect interrupted", e);
         } finally {
-            lock.unlock();
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
             digitalOutput.off();
         }
     }

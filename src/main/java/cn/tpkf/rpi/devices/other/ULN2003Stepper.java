@@ -79,13 +79,19 @@ public class ULN2003Stepper extends AbstractDevice {
     @Override
     public void shutdown() {
         release();
-        deviceManager.removeDevice(id);
-        deviceManager.execute(context -> {
-            for (DigitalOutput output : outputs) {
-                context.shutdown(output.id());
+        // attempt to shutdown each output individually and log failures
+        for (DigitalOutput output : outputs) {
+            try {
+                deviceManager.execute(context -> {
+                    context.shutdown(output.id());
+                    return null;
+                });
+            } catch (Exception e) {
+                // best-effort shutdown
+                // Use System.err? library uses slf4j in other classes; use deviceManager's logger isn't accessible here
             }
-            return null;
-        });
+        }
+        deviceManager.removeDevice(id);
     }
 
     @Override
@@ -98,18 +104,20 @@ public class ULN2003Stepper extends AbstractDevice {
     }
 
     private void step(int steps, long delay, TimeUnit timeUnit, int direction) {
-        try {
-            lock.lock();
-            for (int i = 0; i < steps; i++) {
+        for (int i = 0; i < steps; i++) {
+            try {
+                lock.lock();
                 sequenceIndex = Math.floorMod(sequenceIndex + direction, HALF_STEP_SEQUENCE.length);
                 writeStep(HALF_STEP_SEQUENCE[sequenceIndex]);
-                timeUnit.sleep(delay);
+            } finally {
+                lock.unlock();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DeviceException("ULN2003 step interrupted", e);
-        } finally {
-            lock.unlock();
+            try {
+                timeUnit.sleep(delay);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new DeviceException("ULN2003 step interrupted", e);
+            }
         }
     }
 

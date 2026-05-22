@@ -44,6 +44,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
+import cn.tpkf.rpi.MicrometerExports;
+
 /**
  * @author Harlan
  * @email isharlan.hu@gmali.com
@@ -70,6 +72,9 @@ public class DeviceManager implements AutoCloseable {
     private final RpiConfig config;
 
     private final Map<String, Device> devices = new ConcurrentHashMap<>();
+
+    private MicrometerExports micrometerExports;
+    private final cn.tpkf.rpi.Metrics metrics = new cn.tpkf.rpi.Metrics();
 
     public static DeviceManager create() {
         return new DeviceManager();
@@ -110,6 +115,19 @@ public class DeviceManager implements AutoCloseable {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.timeOutMillis = this.config.getLockTimeoutMillis();
         this.lock = new ReentrantLock();
+        // start metrics server if enabled
+        if (this.config.isMetricsEnabled()) {
+            try {
+                micrometerExports = MicrometerExports.start(this.config.getMetricsPort(),
+                        this::getDeviceCount,
+                        () -> this.getDevices().size(),
+                        () -> 0L);
+                log.info("Metrics server started on port {}", this.config.getMetricsPort());
+            } catch (Exception e) {
+                log.warn("Failed to start metrics server", e);
+                micrometerExports = null;
+            }
+        }
     }
 
     /**
@@ -170,6 +188,12 @@ public class DeviceManager implements AutoCloseable {
         if (Objects.nonNull(previous)) {
             throw new DeviceManagerException("Duplicate device id: " + device.getId());
         }
+        // update metrics on successful add
+        try {
+            metrics.onDeviceAdded();
+        } catch (Exception ignored) {
+            // metrics should not affect device creation
+        }
     }
 
     /**
@@ -177,7 +201,13 @@ public class DeviceManager implements AutoCloseable {
      * @param id 设备id
      */
     public void removeDevice(String id) {
-        devices.remove(id);
+        Device removed = devices.remove(id);
+        if (removed != null) {
+            try {
+                metrics.onDeviceRemoved();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public Device getDevice(String id) {
@@ -215,6 +245,13 @@ public class DeviceManager implements AutoCloseable {
         return devices.size();
     }
 
+    /**
+     * Return a snapshot of internal metrics for observability.
+     */
+    public cn.tpkf.rpi.Metrics.MetricSnapshot getMetrics() {
+        return metrics.snapshot();
+    }
+
     public boolean shutdownDevice(String id) {
         Objects.requireNonNull(id, "id must not be null");
         Device device = devices.get(id);
@@ -222,6 +259,10 @@ public class DeviceManager implements AutoCloseable {
             return false;
         }
         device.shutdown();
+        try {
+            metrics.onDeviceShutdown();
+        } catch (Exception ignored) {
+        }
         return true;
     }
 
@@ -403,8 +444,20 @@ public class DeviceManager implements AutoCloseable {
             }
         });
         devices.clear();
+        // stop metrics server if running
+        if (micrometerExports != null) {
+            try {
+                micrometerExports.stop();
+            } catch (Exception e) {
+                log.warn("Failed to stop metrics server", e);
+            }
+        }
         if (isRunning()) {
-            context.shutdown();
+            try {
+                context.shutdown();
+            } catch (Exception e) {
+                log.warn("Context shutdown failed", e);
+            }
         }
         return true;
     }
@@ -438,14 +491,17 @@ public class DeviceManager implements AutoCloseable {
         return prefix + "-" + bus + "-" + device;
     }
 
-    private synchronized <T extends Device> T getOrCreate(String id, Class<T> deviceType, Supplier<T> factory) {
+    private <T extends Device> T getOrCreate(String id, Class<T> deviceType, Supplier<T> factory) {
         Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(deviceType, "deviceType must not be null");
         Objects.requireNonNull(factory, "factory must not be null");
-        T existing = getDevice(id, deviceType);
-        if (Objects.nonNull(existing)) {
-            return existing;
-        }
-        return factory.get();
+        // Use concurrent map atomic compute to avoid global synchronization and reduce contention
+        return deviceType.cast(devices.computeIfAbsent(id, key -> {
+            T created = factory.get();
+            if (!deviceType.isInstance(created)) {
+                throw new DeviceManagerException("Device type mismatch, id: " + id + ", expected: " + deviceType.getName());
+            }
+            return created;
+        }));
     }
 }

@@ -15,6 +15,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -40,6 +42,9 @@ public class SystemInfoUtils {
 
     private static final long UPDATE_SEC = 3;
 
+    // store previous raw ticks for scheduled updates
+    private static volatile long[] previousTicks;
+
     static {
         CentralProcessor processor = getHardware().getProcessor();
         CentralProcessor.ProcessorIdentifier processorIdentifier = getHardware().getProcessor().getProcessorIdentifier();
@@ -55,20 +60,23 @@ public class SystemInfoUtils {
                 .setProcessorCount(processor.getLogicalProcessorCount())
                 .setMaxFreq(processor.getMaxFreq());
         MEMORY_INFO.setTotalMemory(getTotalMemory());
-        long[] oldTicks = getSystemCpuLoadTicks();
+        // initialize previous ticks
+        previousTicks = getSystemCpuLoadTicks();
         long[] newTicks = getSystemCpuLoadTicks();
-        setCpuTicks(oldTicks, newTicks);
-        Thread cpuTicksUpdater = new Thread(() -> {
-            while (true) {
-                try {
-                    updateCpuTicks();
-                } catch (Exception e) {
-                    log.warn("update cpu ticks error: {}", e.getMessage());
-                }
-            }
+        setCpuTicks(previousTicks, newTicks);
+        // schedule periodic update instead of manual thread sleep loop
+        ScheduledExecutorService SCHED = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "system-info-updater");
+            t.setDaemon(true);
+            return t;
         });
-        cpuTicksUpdater.setDaemon(true);
-        cpuTicksUpdater.start();
+        SCHED.scheduleAtFixedRate(() -> {
+            try {
+                updateCpuTicks();
+            } catch (Exception e) {
+                log.warn("update cpu ticks error: {}", e.getMessage());
+            }
+        }, 0, UPDATE_SEC, TimeUnit.SECONDS);
     }
 
     private SystemInfoUtils() {
@@ -79,14 +87,10 @@ public class SystemInfoUtils {
      * 更新CPU信息
      */
     private static void updateCpuTicks() {
-        long[] oldTicks = getSystemCpuLoadTicks();
-        try {
-            TimeUnit.SECONDS.sleep(UPDATE_SEC);
-        } catch (InterruptedException e) {
-            log.error("init calculate system info error: {}", e.getMessage());
-            Thread.currentThread().interrupt();
-        }
+        // use previousTicks as the baseline to calculate deltas across scheduled runs
+        long[] oldTicks = previousTicks;
         long[] newTicks = getSystemCpuLoadTicks();
+        previousTicks = newTicks;
         setCpuTicks(oldTicks, newTicks);
     }
 
@@ -104,7 +108,9 @@ public class SystemInfoUtils {
             log.error("set cpu ticks info error: {}", e.getMessage());
             Thread.currentThread().interrupt();
         } finally {
-            LOCK.unlock();
+            if (LOCK.isHeldByCurrentThread()) {
+                LOCK.unlock();
+            }
         }
     }
 
@@ -122,7 +128,9 @@ public class SystemInfoUtils {
             log.error("get cpu ticks info error: {}", e.getMessage());
             Thread.currentThread().interrupt();
         } finally {
-            LOCK.unlock();
+            if (LOCK.isHeldByCurrentThread()) {
+                LOCK.unlock();
+            }
         }
         return null;
     }

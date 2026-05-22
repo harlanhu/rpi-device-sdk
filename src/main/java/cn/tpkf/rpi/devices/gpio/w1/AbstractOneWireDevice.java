@@ -94,11 +94,15 @@ public abstract class AbstractOneWireDevice extends AbstractGpioDevice {
 
     @Override
     public void shutdown() {
-        deviceManager.execute(context -> {
-            digitalOutput.shutdown(context);
-            digitalInput.shutdown(context);
-            return null;
-        });
+        try {
+            deviceManager.execute(context -> {
+                digitalOutput.shutdown(context);
+                digitalInput.shutdown(context);
+                return null;
+            });
+        } catch (Exception e) {
+            // best-effort
+        }
         deviceManager.removeDevice(id);
     }
 }

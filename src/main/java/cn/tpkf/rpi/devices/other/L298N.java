@@ -95,15 +95,34 @@ public class L298N extends AbstractDevice {
 
     @Override
     public void shutdown() {
-        deviceManager.removeDevice(id);
-        deviceManager.execute(context -> {
-            context.shutdown(in1.id());
-            context.shutdown(in2.id());
-            if (Objects.nonNull(enable)) {
-                context.shutdown(enable.id());
+        // best-effort shutdown for each resource
+        try {
+            deviceManager.execute(context -> {
+                context.shutdown(in1.id());
+                return null;
+            });
+        } catch (Exception e) {
+            // ignore
+        }
+        try {
+            deviceManager.execute(context -> {
+                context.shutdown(in2.id());
+                return null;
+            });
+        } catch (Exception e) {
+            // ignore
+        }
+        if (Objects.nonNull(enable)) {
+            try {
+                deviceManager.execute(context -> {
+                    context.shutdown(enable.id());
+                    return null;
+                });
+            } catch (Exception e) {
+                // ignore
             }
-            return null;
-        });
+        }
+        deviceManager.removeDevice(id);
     }
 
     @Override

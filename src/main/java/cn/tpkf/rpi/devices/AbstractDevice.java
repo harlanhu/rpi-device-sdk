@@ -3,6 +3,7 @@ package cn.tpkf.rpi.devices;
 import cn.tpkf.rpi.exception.DeviceException;
 import cn.tpkf.rpi.manager.DeviceManager;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
@@ -13,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @email isharlan.hu@gmali.com
  * @date 2023/11/22
  */
+@Slf4j
 public abstract class AbstractDevice implements Device {
 
     /**
@@ -59,9 +61,18 @@ public abstract class AbstractDevice implements Device {
 
     @Override
     public void shutdown() {
-        deviceManager.removeDevice(id);
+        // Try to shutdown resources in the context first, but do not fail the caller if shutdown fails
         if (deviceManager.isRunning()) {
-            deviceManager.execute(context -> context.shutdown(id));
+            try {
+                deviceManager.execute(context -> {
+                    context.shutdown(id);
+                    return null;
+                });
+            } catch (Exception e) {
+                log.warn("Failed to shutdown device context for id: {}", id, e);
+            }
         }
+        // Always remove from manager to avoid leaks
+        deviceManager.removeDevice(id);
     }
 }

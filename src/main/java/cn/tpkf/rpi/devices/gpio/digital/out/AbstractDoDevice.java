@@ -199,17 +199,23 @@ public class AbstractDoDevice extends AbstractDigitalDevice {
         Objects.requireNonNull(timeUnit, "timeUnit must not be null");
         Objects.requireNonNull(digitalState, "digitalState must not be null");
         try {
-            lock.lock();
             while (times >= 1) {
-                digitalOutput.blink(duration, cycle, timeUnit, digitalState);
+                try {
+                    lock.lock();
+                    digitalOutput.blink(duration, cycle, timeUnit, digitalState);
+                } finally {
+                    lock.unlock();
+                }
                 times--;
-                timeUnit.sleep(interval);
+                try {
+                    timeUnit.sleep(interval);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new DeviceException("DigitalOutput cycle interrupted", e);
+                }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DeviceException("DigitalOutput cycle interrupted", e);
         } finally {
-            lock.unlock();
+            // nothing to unlock here because locks are handled per-iteration
         }
     }
 

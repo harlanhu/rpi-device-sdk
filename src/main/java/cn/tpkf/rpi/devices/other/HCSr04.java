@@ -76,18 +76,26 @@ public class HCSr04 extends AbstractDevice {
      */
     public double detect() {
         try {
+            // keep critical section minimal: avoid holding lock during sleeps
             lock.lock();
             trigger.on();
+        } finally {
+            lock.unlock();
+        }
+        try {
             TimeUnit.MICROSECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DeviceException("HCSr04 detect error", e);
+        }
+        try {
+            lock.lock();
             trigger.off();
             waitForEchoState(DigitalState.HIGH);
             long startNanoTime = System.nanoTime();
             waitForEchoState(DigitalState.LOW);
             long endNanoTime = System.nanoTime();
             return (endNanoTime - startNanoTime) / 1000000000.0 * SPEED_OF_SOUND_METERS_PER_SECOND / 2;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DeviceException("HCSr04 detect error", e);
         } finally {
             lock.unlock();
         }
@@ -105,9 +113,24 @@ public class HCSr04 extends AbstractDevice {
 
     @Override
     public void shutdown() {
+        // best-effort to shutdown GPIO resources
+        try {
+            deviceManager.execute(context -> {
+                context.shutdown(trigger.id());
+                return null;
+            });
+        } catch (Exception e) {
+            // ignore - best effort
+        }
+        try {
+            deviceManager.execute(context -> {
+                context.shutdown(echo.id());
+                return null;
+            });
+        } catch (Exception e) {
+            // ignore - best effort
+        }
         deviceManager.removeDevice(id);
-        deviceManager.execute(context -> context.shutdown(trigger.id()));
-        deviceManager.execute(context -> context.shutdown(echo.id()));
     }
 
     @Override

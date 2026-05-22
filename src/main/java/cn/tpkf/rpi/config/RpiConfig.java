@@ -36,6 +36,11 @@ public final class RpiConfig {
 
     private final Class<? extends I2CProvider> i2cProvider;
 
+    // metrics configuration
+    private final boolean metricsEnabled;
+
+    private final int metricsPort;
+
     private RpiConfig(Builder builder) {
         this.lockTimeoutMillis = builder.lockTimeoutMillis;
         this.debounceMicros = builder.debounceMicros;
@@ -44,6 +49,8 @@ public final class RpiConfig {
         this.digitalOutputProvider = builder.digitalOutputProvider;
         this.pwmProvider = builder.pwmProvider;
         this.i2cProvider = builder.i2cProvider;
+        this.metricsEnabled = builder.metricsEnabled;
+        this.metricsPort = builder.metricsPort;
     }
 
     public static RpiConfig defaults() {
@@ -82,6 +89,14 @@ public final class RpiConfig {
         return i2cProvider;
     }
 
+    public boolean isMetricsEnabled() {
+        return metricsEnabled;
+    }
+
+    public int getMetricsPort() {
+        return metricsPort;
+    }
+
     public static final class Builder {
 
         private long lockTimeoutMillis = DEFAULT_LOCK_TIMEOUT_MILLIS;
@@ -97,6 +112,10 @@ public final class RpiConfig {
         private Class<? extends PwmProvider> pwmProvider = PiGpioPwmProvider.class;
 
         private Class<? extends I2CProvider> i2cProvider = PiGpioI2CProvider.class;
+
+        // metrics defaults
+        private boolean metricsEnabled = false;
+        private int metricsPort = 9091;
 
         private Builder() {
         }
@@ -139,6 +158,19 @@ public final class RpiConfig {
 
         public Builder i2cProvider(Class<? extends I2CProvider> i2cProvider) {
             this.i2cProvider = Objects.requireNonNull(i2cProvider, "i2cProvider must not be null");
+            return this;
+        }
+
+        public Builder metricsEnabled(boolean enabled) {
+            this.metricsEnabled = enabled;
+            return this;
+        }
+
+        public Builder metricsPort(int port) {
+            if (port <= 0 || port > 65535) {
+                throw new IllegalArgumentException("metricsPort must be a valid port number");
+            }
+            this.metricsPort = port;
             return this;
         }
 
